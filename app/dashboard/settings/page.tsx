@@ -211,7 +211,11 @@ export default function SettingsPage() {
                   {(user?.currentPeriodEnd || user?.lastPaymentAt) && (
                     <span className="text-[10px] font-medium text-secondary">
                       {isCanceled ? "Access ends on: " : "Renews on: "}
-                      {new Date(user.currentPeriodEnd || new Date(new Date(user.lastPaymentAt!).setMonth(new Date(user.lastPaymentAt!).getMonth() + 1))).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      {new Date(
+                        user.currentPeriodEnd
+                          ? user.currentPeriodEnd
+                          : new Date(new Date(user.lastPaymentAt!).setMonth(new Date(user.lastPaymentAt!).getMonth() + 1))
+                      ).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </span>
                   )}
                 </div>

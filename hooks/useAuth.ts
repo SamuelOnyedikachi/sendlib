@@ -10,6 +10,7 @@ export interface User {
   plan?: "free" | "pro";
   subscriptionStatus?: "active" | "canceled" | "past_due" | "none";
   lastPaymentAt?: string;
+  currentPeriodEnd?: string;
   billingCurrency?: string;
   monthlySentCount?: number;
   monthlyLimitResetAt?: string;
