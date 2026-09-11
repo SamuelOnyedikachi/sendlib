@@ -38,9 +38,9 @@ import { redactEmail } from "@/utils/redact";
 import { useAnalytics } from "@/hooks/useAnalytics";
 
 export default function DashboardPage() {
-  const { data: apiKeys, isLoading: isLoadingKeys } = useApiKeys();
+  const { data: apiKeys, isLoading: isLoadingKeys, isFetching: isFetchingKeys, isError: isErrorKeys } = useApiKeys();
   const { data: analytics, isLoading: isLoadingAnalytics } = useAnalytics();
-  const { data: gmailAccounts, isLoading: isLoadingAccounts } = useGmailAccounts();
+  const { data: gmailAccounts, isLoading: isLoadingAccounts, isFetching: isFetchingAccounts, isError: isErrorAccounts } = useGmailAccounts();
   const { data: logsData, isLoading: isLoadingLogs, refetch: refetchLogs, isFetching: isFetchingLogs } = useEmailLogs(1, 5);
   const { mutate: connectGmail, isPending: isConnecting } = useConnectGmail();
   const { data: user, isLoading: isLoadingUser } = useMe();
@@ -62,7 +62,13 @@ export default function DashboardPage() {
   const successRate = weekTotal === 0 ? 100 : Math.round((weekSent / weekTotal) * 100);
 
   useEffect(() => {
-    if (!isLoadingAccounts && connectedGmailsCount > 0 && activeKeysCount === 0) {
+    // Only celebrate once both queries have settled (not loading, not refetching, no error).
+    // Otherwise a stale/refetching api-keys cache could report 0 keys right after a key
+    // was created, causing the "Step 1 Complete" celebration to fire again.
+    const keysSettled = !isLoadingKeys && !isFetchingKeys && !isErrorKeys;
+    const accountsSettled = !isLoadingAccounts && !isFetchingAccounts && !isErrorAccounts;
+
+    if (accountsSettled && keysSettled && connectedGmailsCount > 0 && activeKeysCount === 0) {
       const seen = localStorage.getItem("sendlib_confetti_step1_seen");
       if (!seen) {
         confetti({
@@ -75,7 +81,7 @@ export default function DashboardPage() {
         return () => clearTimeout(timer);
       }
     }
-  }, [isLoadingAccounts, connectedGmailsCount, activeKeysCount]);
+  }, [isLoadingKeys, isFetchingKeys, isErrorKeys, isLoadingAccounts, isFetchingAccounts, isErrorAccounts, connectedGmailsCount, activeKeysCount]);
 
   return (
     <div className="space-y-6">
