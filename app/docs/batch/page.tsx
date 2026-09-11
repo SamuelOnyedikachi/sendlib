@@ -49,7 +49,7 @@ export default function BatchSendPage() {
           </div>
         </div>
 
-        {/* Step 1 — Send the batch */}
+        {/* Step 1: Send the batch */}
         <div>
           <h2 className="text-xl font-bold text-primary-sendlib mb-3">Step 1: Send the batch</h2>
           <EditableCodeBlock
@@ -286,7 +286,7 @@ System.out.println(response.body());`
 }`}</pre>
         </div>
 
-        {/* Step 2 — Poll progress */}
+        {/* Step 2: Poll progress */}
         <div>
           <h2 className="text-xl font-bold text-primary-sendlib mb-3">Step 2: Poll for progress</h2>
           <EditableCodeBlock

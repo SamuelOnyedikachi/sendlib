@@ -38,7 +38,7 @@ function sendEmail(to, name) {
       let data = "";
       res.on("data", (chunk) => (data += chunk));
       res.on("end", () => {
-        console.log(`[${to}] Status: ${res.statusCode} — ${data}`);
+        console.log(`[${to}] Status: ${res.statusCode} - ${data}`);
         resolve();
       });
     });

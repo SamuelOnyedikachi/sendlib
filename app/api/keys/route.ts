@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/db";
 import ApiKey, { IApiKey } from "@/models/ApiKey";
 import GmailAccount from "@/models/GmailAccount";
 import User from "@/models/User";
+import { getEffectiveUserPlan } from "@/lib/paystack";
 import argon2 from "argon2";
 import crypto from "crypto";
 import mongoose from "mongoose";
@@ -66,12 +67,13 @@ export async function POST(req: NextRequest) {
       userId: new mongoose.Types.ObjectId(user.id),
       revoked: false,
     });
-    const maxKeys = dbUser?.plan === "pro" ? 100 : MAX_KEYS_PER_USER;
+    const effectivePlan = getEffectiveUserPlan(dbUser);
+    const maxKeys = effectivePlan === "pro" ? 100 : MAX_KEYS_PER_USER;
     if (activeKeyCount >= maxKeys) {
       return NextResponse.json(
         {
           success: false,
-          message: `You have reached the maximum of ${maxKeys} active API keys. Please revoke an existing key before creating a new one.${dbUser?.plan === "free" ? " Upgrade to Pro to create up to 100 API keys." : ""}`,
+          message: `You have reached the maximum of ${maxKeys} active API keys. Please revoke an existing key before creating a new one.${effectivePlan === "free" ? " Upgrade to Pro to create up to 100 API keys." : ""}`,
         },
         { status: 429 }
       );

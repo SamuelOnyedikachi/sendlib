@@ -110,7 +110,7 @@ export const DEFAULT_TEMPLATES: DefaultTemplate[] = [
     name: "Payment Successful",
     category: "billing",
     description: "Confirm a completed payment.",
-    subject: "Payment received — {{amount}}",
+    subject: "Payment received - {{amount}}",
     variables: ["name", "amount", "product"],
     html: wrapEmail(
       `${h1("Payment received")}

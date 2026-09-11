@@ -192,7 +192,7 @@ export default function DebuggerPage() {
                   <div className="min-w-0">
                     <h2 className="text-base font-headline-md font-bold text-primary-sendlib truncate">{selected?.subject}</h2>
                     <p className="text-xs text-secondary mt-0.5">
-                      To {selected ? redactEmail(selected.to) : "—"}
+                      To {selected ? redactEmail(selected.to) : "-"}
                       {selected?.from ? ` · From ${redactEmail(selected.from)}` : ""}
                     </p>
                   </div>

@@ -1,4 +1,4 @@
-// googleapis removed — all Google API calls use axios directly
+// googleapis removed - all Google API calls use axios directly
 import axios, { isAxiosError } from "axios";
 import axiosSrv from "@/lib/axios";
 import { encrypt, decrypt } from "./encryption";
@@ -61,10 +61,10 @@ export function verifyGmailState(state: string): string {
   const expected = crypto.createHmac("sha256", JWT_SECRET!).update(payload).digest("hex");
   try {
     if (!crypto.timingSafeEqual(Buffer.from(hmac, "hex"), Buffer.from(expected, "hex"))) {
-      throw new Error("State signature mismatch — possible CSRF attempt");
+      throw new Error("State signature mismatch - possible CSRF attempt");
     }
   } catch {
-    throw new Error("State signature mismatch — possible CSRF attempt");
+    throw new Error("State signature mismatch - possible CSRF attempt");
   }
 
   if (Date.now() - timestamp > 10 * 60 * 1000) {

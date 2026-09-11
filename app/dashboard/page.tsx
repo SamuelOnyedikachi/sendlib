@@ -339,7 +339,7 @@ export default function DashboardPage() {
                     emailLogs.map((log: EmailLog, index: number) => (
                       <TableRow key={log.id || index} className="border-outline-variant/30 transition-colors hover:bg-surface-container-low group">
                         <TableCell className="pl-6 py-4 font-mono text-xs text-secondary whitespace-nowrap">
-                          {log.from ? redactEmail(log.from) : "—"}
+                          {log.from ? redactEmail(log.from) : "-"}
                         </TableCell>
                         <TableCell className="py-4 font-bold text-sm text-primary-sendlib whitespace-nowrap">
                           {redactEmail(log.to)}

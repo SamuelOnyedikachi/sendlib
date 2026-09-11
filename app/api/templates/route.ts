@@ -8,6 +8,7 @@ import {
   isValidSlug,
   slugify,
 } from "@/lib/templates";
+import { getEffectiveUserPlan } from "@/lib/paystack";
 import mongoose from "mongoose";
 
 const MAX_TEMPLATES_FREE = 20;
@@ -129,14 +130,15 @@ export async function POST(req: NextRequest) {
     }
 
     const User = (await import("@/models/User")).default;
-    const dbUser = await User.findById(user.id).select("plan").lean();
-    const max = dbUser?.plan === "pro" ? MAX_TEMPLATES_PRO : MAX_TEMPLATES_FREE;
+    const dbUser = await User.findById(user.id).select("plan currentPeriodEnd lastPaymentAt subscriptionStatus").lean();
+    const effectivePlan = getEffectiveUserPlan(dbUser);
+    const max = effectivePlan === "pro" ? MAX_TEMPLATES_PRO : MAX_TEMPLATES_FREE;
     const count = await EmailTemplate.countDocuments({ userId });
     if (count >= max) {
       return NextResponse.json(
         {
           success: false,
-          message: `You have reached the ${max} template limit.${dbUser?.plan === "free" ? " Upgrade to Pro for more." : ""}`,
+          message: `You have reached the ${max} template limit.${effectivePlan === "free" ? " Upgrade to Pro for more." : ""}`,
         },
         { status: 429 }
       );

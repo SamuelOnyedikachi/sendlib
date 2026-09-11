@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { getAuthUser } from "@/lib/auth";
 import User from "@/models/User";
+import { syncUserSubscription } from "@/lib/paystack";
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,10 +12,12 @@ export async function GET(req: NextRequest) {
     }
 
     await connectDB();
-    const user = await User.findById(payload.id).select("-__v").lean();
-    if (!user) {
+    const userDoc = await User.findById(payload.id);
+    if (!userDoc) {
       return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
     }
+
+    const user = await syncUserSubscription(userDoc);
 
     return NextResponse.json({
       success: true,
@@ -26,6 +29,7 @@ export async function GET(req: NextRequest) {
         plan: user.plan,
         subscriptionStatus: user.subscriptionStatus,
         lastPaymentAt: user.lastPaymentAt,
+        currentPeriodEnd: user.currentPeriodEnd,
         billingCurrency: user.billingCurrency,
         monthlySentCount: user.monthlySentCount,
         monthlyLimitResetAt: user.monthlyLimitResetAt,

@@ -6,8 +6,8 @@ import { sendGmailEmail } from "./gmail";
 const BATCH_QUEUE_KEY = "batch_queue";
 // Gmail API quota: 250 units/user/second. Each send = 100 units = 2.5 sends/sec max.
 // We stay well under that ceiling to avoid per-account quota errors.
-const GMAIL_SEND_DELAY_MS = 1000;     // 1/sec for @gmail.com — conservative, Google's hard cap is 500/day anyway
-const WORKSPACE_SEND_DELAY_MS = 500;  // 2/sec for Workspace — safely under the 2.5/sec API quota
+const GMAIL_SEND_DELAY_MS = 1000;     // 1/sec for @gmail.com - conservative, Google's hard cap is 500/day anyway
+const WORKSPACE_SEND_DELAY_MS = 500;  // 2/sec for Workspace - safely under the 2.5/sec API quota
 
 function extractRawEmail(from: string): string {
   // Handle both "Brand Name <email@domain.com>" and plain "email@domain.com"
@@ -63,7 +63,7 @@ async function processBatchJob(jobId: string): Promise<void> {
   }
 
   if (job.status === "done" || job.status === "failed") {
-    console.warn(`[BatchWorker] Job ${jobId} already in terminal state "${job.status}" — skipping.`);
+    console.warn(`[BatchWorker] Job ${jobId} already in terminal state "${job.status}" - skipping.`);
     return;
   }
 
@@ -74,7 +74,7 @@ async function processBatchJob(jobId: string): Promise<void> {
 
   const retentionDays = 90;
   // Extract the raw email from the stored from field before determining delay.
-  // job.from could be "Brand <me@gmail.com>" — passing that raw to isWorkspaceEmail
+  // job.from could be "Brand <me@gmail.com>" - passing that raw to isWorkspaceEmail
   // would wrongly classify it as Workspace since the string ends with ">" not "@gmail.com".
   const rawFromEmail = extractRawEmail(job.from);
   const delay = isWorkspaceEmail(rawFromEmail) ? WORKSPACE_SEND_DELAY_MS : GMAIL_SEND_DELAY_MS;
@@ -155,15 +155,15 @@ async function processBatchJob(jobId: string): Promise<void> {
 /**
  * Start the background batch worker.
  * Uses BRPOP (blocking pop) to wait efficiently for new jobs.
- * Runs in a persistent loop — if a job crashes, it logs and continues.
+ * Runs in a persistent loop - if a job crashes, it logs and continues.
  * Must be called exactly once on server boot (from instrumentation.ts).
  */
 export async function startBatchWorker(): Promise<void> {
-  // Use a dedicated Redis connection for BRPOP — it blocks and must not
+  // Use a dedicated Redis connection for BRPOP - it blocks and must not
   // share the connection used for other commands.
   const redis = connectToRedis().duplicate();
 
-  console.log("[BatchWorker] Started — listening for jobs on queue:", BATCH_QUEUE_KEY);
+  console.log("[BatchWorker] Started - listening for jobs on queue:", BATCH_QUEUE_KEY);
 
   // On restart, re-queue any jobs that were stuck in "processing" state
   // (i.e. server crashed mid-job). This gives us crash recovery.
@@ -188,7 +188,7 @@ export async function startBatchWorker(): Promise<void> {
   while (true) {
     try {
       // BRPOP blocks up to 5 seconds waiting for a job.
-      // Returns [key, value] or null on timeout — loop continues either way.
+      // Returns [key, value] or null on timeout - loop continues either way.
       const result = await redis.brpop(BATCH_QUEUE_KEY, 5);
       if (!result) continue;
 
@@ -196,7 +196,7 @@ export async function startBatchWorker(): Promise<void> {
       console.log(`[BatchWorker] Dequeued job: ${jobId}`);
       await processBatchJob(jobId);
     } catch (err) {
-      // Log and keep the worker alive — never crash the loop.
+      // Log and keep the worker alive - never crash the loop.
       console.error("[BatchWorker] Unhandled error in worker loop:", err);
       await sleep(2000); // back-off briefly before retrying
     }

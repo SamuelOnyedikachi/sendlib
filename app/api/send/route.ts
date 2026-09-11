@@ -10,6 +10,7 @@ import mongoose from "mongoose";
 import { rateLimit } from "@/lib/rateLimit";
 import { interpolate, isValidSlug } from "@/lib/templates";
 import { analyzeHtmlIssues, type DebugStep } from "@/lib/emailDebugger";
+import { getEffectiveUserPlan } from "@/lib/paystack";
 
 const MAX_SUBJECT_LENGTH = 998;
 const MAX_RECIPIENTS = 50;
@@ -98,7 +99,7 @@ export async function POST(req: NextRequest) {
     }
 
     // --- Rate limit ---
-    const plan = user.plan || "free";
+    const plan = getEffectiveUserPlan(user);
     const rl = await rateLimit("send", apiKeyId!.toString(), plan);
     
     if (!rl.success) {
@@ -235,7 +236,7 @@ export async function POST(req: NextRequest) {
         label: "Template rendered",
         ok: true,
         skipped: true,
-        detail: "Custom html/text used — no template.",
+        detail: "Custom html/text used - no template.",
       });
       preSteps.push({
         key: "variables",

@@ -1,122 +1,132 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
-import { verifyBachsSignature } from "@/lib/bachs";
+import { verifyPaystackSignature } from "@/lib/paystack";
 import mongoose from "mongoose";
 
-interface WebhookData {
-  id?: string;
-  subscription_id?: string;
-  subscription?: string | { id?: string; subscription_id?: string };
-  metadata?: Record<string, string>;
-}
-
-interface WebhookPayload {
-  type?: string;
+interface PaystackWebhookPayload {
   event?: string;
-  status?: string;
-  data?: WebhookData;
-}
-
-function extractSubscriptionId(data: WebhookData | undefined): string | undefined {
-  if (!data) return undefined;
-  if (typeof data.subscription_id === "string") return data.subscription_id;
-  if (typeof data.subscription === "string") return data.subscription;
-  if (typeof data.subscription === "object" && data.subscription) {
-    if (typeof data.subscription.subscription_id === "string") return data.subscription.subscription_id;
-    if (typeof data.subscription.id === "string") return data.subscription.id;
-  }
-  if (typeof data.id === "string" && data.id.startsWith("sub_")) return data.id;
-  return undefined;
+  data?: {
+    id?: number;
+    reference?: string;
+    status?: string;
+    amount?: number;
+    currency?: string;
+    paid_at?: string;
+    subscription_code?: string;
+    email_token?: string;
+    next_payment_date?: string;
+    customer?: {
+      id?: number;
+      email?: string;
+      customer_code?: string;
+    };
+    plan?: string | { plan_code?: string };
+    metadata?: Record<string, string>;
+  };
 }
 
 export async function POST(req: NextRequest) {
   try {
     const rawBody = await req.text();
-    const signature = req.headers.get("x-bachs-signature");
-    const timestamp = req.headers.get("x-bachs-timestamp");
-    const webhookSecret = process.env.BACHS_WEBHOOK_SECRET?.trim();
+    const signature = req.headers.get("x-paystack-signature");
+    const secretKey = process.env.PAYSTACK_SECRET_KEY?.trim();
 
-    if (!webhookSecret) {
-      console.error("BACHS_WEBHOOK_SECRET is not set. Rejecting webhook.");
+    if (!secretKey) {
+      console.error("PAYSTACK_SECRET_KEY is not set. Rejecting webhook.");
       return NextResponse.json({ success: false, message: "Webhook not configured" }, { status: 500 });
     }
 
-    if (!signature || !timestamp) {
-      console.warn("Bachs webhook missing signature or timestamp headers.");
-      return NextResponse.json({ success: false, message: "Missing signature headers" }, { status: 401 });
+    if (!signature) {
+      console.warn("Paystack webhook missing x-paystack-signature header.");
+      return NextResponse.json({ success: false, message: "Missing signature header" }, { status: 401 });
     }
 
-    const isValid = verifyBachsSignature(rawBody, webhookSecret, timestamp, signature);
+    const isValid = verifyPaystackSignature(rawBody, signature, secretKey);
     if (!isValid) {
-      console.warn("Bachs webhook invalid signature.");
+      console.warn("Paystack webhook invalid signature.");
       return NextResponse.json({ success: false, message: "Invalid signature" }, { status: 401 });
     }
 
-    let payload: WebhookPayload = {};
+    let payload: PaystackWebhookPayload = {};
     try {
-      payload = JSON.parse(rawBody) as WebhookPayload;
+      payload = JSON.parse(rawBody) as PaystackWebhookPayload;
     } catch {
       return NextResponse.json({ success: false, message: "Invalid JSON" }, { status: 400 });
     }
 
-    const eventType = payload.type || payload.event || payload.status;
-    const data = payload.data || (payload as unknown as WebhookData);
-    const metadata = data.metadata || {};
-    const userId = metadata.userId;
+    const event = payload.event;
+    const data = payload.data;
+    if (!event || !data) {
+      return NextResponse.json({ received: true });
+    }
+
+    const userId = data.metadata?.userId;
+    const customerEmail = data.customer?.email?.toLowerCase();
+
+    await connectDB();
+    let user = null;
 
     if (userId && mongoose.Types.ObjectId.isValid(userId)) {
-      await connectDB();
-      const user = await User.findById(new mongoose.Types.ObjectId(userId));
+      user = await User.findById(new mongoose.Types.ObjectId(userId));
+    }
+    if (!user && customerEmail) {
+      user = await User.findOne({ email: customerEmail });
+    }
+    if (!user && data.subscription_code) {
+      user = await User.findOne({ subscriptionCode: data.subscription_code });
+    }
 
-      if (user) {
-        const activeEvents = [
-          "checkout.completed",
-          "collection.succeeded",
-          "customer.subscription.created",
-          "customer.subscription.updated",
-          "COMPLETED",
-        ];
+    if (!user) {
+      console.warn("Paystack webhook: user not found for event", event);
+      return NextResponse.json({ received: true });
+    }
 
-        const inactiveEvents = [
-          "customer.subscription.deleted",
-          "customer.subscription.canceled",
-          "collection.failed",
-          "invoice.payment_failed",
-          "checkout.expired",
-          "EXPIRED",
-          "CANCELLED",
-        ];
+    if (event === "charge.success") {
+      const paidAt = data.paid_at ? new Date(data.paid_at) : new Date();
+      const periodEnd = data.next_payment_date ? new Date(data.next_payment_date) : new Date(paidAt.getTime() + 31 * 24 * 60 * 60 * 1000);
 
-        if (eventType && activeEvents.includes(eventType)) {
-          user.set("plan", "pro");
-          user.set("subscriptionStatus", "active");
-          user.set("lastPaymentAt", new Date());
-
-          const subId = extractSubscriptionId(data);
-          if (subId) {
-            user.set("subscriptionId", subId);
-          }
-
-          await user.save();
-        } else if (eventType && inactiveEvents.includes(eventType)) {
-          const thirtyFiveDaysAgo = new Date(Date.now() - 35 * 24 * 60 * 60 * 1000);
-          const paidRecently = user.lastPaymentAt && new Date(user.lastPaymentAt) > thirtyFiveDaysAgo;
-          if (!paidRecently) {
-            user.set("plan", "free");
-            user.set("subscriptionStatus", eventType.includes("failed") ? "past_due" : "canceled");
-            await user.save();
-          } else {
-            console.warn(`Skipping downgrade for user ${userId}: paid within last 35 days (${user.lastPaymentAt}), event: ${eventType}`);
-          }
-        }
+      user.set("plan", "pro");
+      user.set("subscriptionStatus", "active");
+      user.set("lastPaymentAt", paidAt);
+      user.set("currentPeriodEnd", periodEnd);
+      if (data.currency) {
+        user.set("billingCurrency", data.currency);
       }
+      if (data.subscription_code) {
+        user.set("subscriptionCode", data.subscription_code);
+        user.set("subscriptionId", data.subscription_code);
+      }
+      if (data.email_token) {
+        user.set("subscriptionToken", data.email_token);
+      }
+
+      await user.save();
+    } else if (event === "subscription.create") {
+      if (data.subscription_code) {
+        user.set("subscriptionCode", data.subscription_code);
+        user.set("subscriptionId", data.subscription_code);
+      }
+      if (data.email_token) {
+        user.set("subscriptionToken", data.email_token);
+      }
+      if (data.next_payment_date) {
+        user.set("currentPeriodEnd", new Date(data.next_payment_date));
+      }
+      user.set("subscriptionStatus", "active");
+      await user.save();
+    } else if (event === "subscription.disable" || event === "subscription.not_renew") {
+      user.set("subscriptionStatus", "canceled");
+      await user.save();
+    } else if (event === "invoice.payment_failed") {
+      user.set("subscriptionStatus", "past_due");
+      await user.save();
     }
 
     return NextResponse.json({ received: true });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Webhook processing error";
-    console.error("Bachs webhook error:", message);
+    console.error("Paystack webhook error:", message);
     return NextResponse.json({ success: false, message }, { status: 500 });
   }
 }

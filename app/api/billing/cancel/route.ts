@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuthUser } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
-import { cancelBachsSubscription } from "@/lib/bachs";
+import { disablePaystackSubscription } from "@/lib/paystack";
 import mongoose from "mongoose";
 
 export async function POST(req: NextRequest) {
@@ -15,12 +15,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
     }
 
-    if (user.subscriptionId) {
+    if (user.subscriptionCode && user.subscriptionToken) {
       try {
-        await cancelBachsSubscription(user.subscriptionId);
+        await disablePaystackSubscription({
+          code: user.subscriptionCode,
+          token: user.subscriptionToken,
+        });
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Cancellation call failed";
-        console.warn("Bachs cancellation warning:", msg);
+        console.warn("Paystack cancellation warning:", msg);
       }
     }
 

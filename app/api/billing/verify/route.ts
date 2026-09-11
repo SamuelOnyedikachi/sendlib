@@ -2,32 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuthUser } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
-import { getBachsCheckoutSession } from "@/lib/bachs";
+import { verifyPaystackTransaction } from "@/lib/paystack";
 import mongoose from "mongoose";
-
-interface WebhookData {
-  id?: string;
-  subscription_id?: string;
-  subscription?: string | { id?: string; subscription_id?: string };
-}
-
-function extractSubscriptionId(data: WebhookData | undefined): string | undefined {
-  if (!data) return undefined;
-  if (typeof data.subscription_id === "string") return data.subscription_id;
-  if (typeof data.subscription === "string") return data.subscription;
-  if (typeof data.subscription === "object" && data.subscription) {
-    if (typeof data.subscription.subscription_id === "string") return data.subscription.subscription_id;
-    if (typeof data.subscription.id === "string") return data.subscription.id;
-  }
-  if (typeof data.id === "string" && data.id.startsWith("sub_")) return data.id;
-  return undefined;
-}
 
 export async function GET(req: NextRequest) {
   try {
     const authUser = await requireAuthUser(req);
     const { searchParams } = new URL(req.url);
-    const checkoutId = searchParams.get("checkout_id");
+    const reference = searchParams.get("reference") || searchParams.get("trxref");
 
     await connectDB();
     const user = await User.findById(new mongoose.Types.ObjectId(authUser.id));
@@ -36,17 +18,20 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
     }
 
-    if (checkoutId) {
+    if (reference) {
       try {
-        const session = await getBachsCheckoutSession(checkoutId);
-        if (session && (session.status === "COMPLETED" || session.status === "completed")) {
+        const data = await verifyPaystackTransaction(reference);
+        if (data && data.status === "success") {
+          const paidAt = data.paid_at ? new Date(data.paid_at) : new Date();
+          const periodEnd = new Date(paidAt);
+          periodEnd.setDate(periodEnd.getDate() + 31);
+
           user.set("plan", "pro");
           user.set("subscriptionStatus", "active");
-          user.set("lastPaymentAt", new Date());
-
-          const subId = extractSubscriptionId(session as WebhookData);
-          if (subId) {
-            user.set("subscriptionId", subId);
+          user.set("lastPaymentAt", paidAt);
+          user.set("currentPeriodEnd", periodEnd);
+          if (data.currency) {
+            user.set("billingCurrency", data.currency);
           }
 
           await user.save();

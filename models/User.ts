@@ -9,8 +9,11 @@ export interface IUser extends Document {
   avatar?: string;
   plan: "free" | "pro";
   subscriptionId?: string;
+  subscriptionCode?: string;
+  subscriptionToken?: string;
   subscriptionStatus?: "active" | "canceled" | "past_due" | "none";
   lastPaymentAt?: Date;
+  currentPeriodEnd?: Date;
   billingCurrency?: string;
   monthlySentCount?: number;
   monthlyLimitResetAt?: Date;
@@ -27,8 +30,11 @@ const UserSchema = new Schema<IUser>(
     avatar: { type: String },
     plan: { type: String, enum: ["free", "pro"], default: "free" },
     subscriptionId: { type: String },
+    subscriptionCode: { type: String, sparse: true, index: true },
+    subscriptionToken: { type: String },
     subscriptionStatus: { type: String, enum: ["active", "canceled", "past_due", "none"], default: "none" },
     lastPaymentAt: { type: Date },
+    currentPeriodEnd: { type: Date },
     billingCurrency: { type: String },
     monthlySentCount: { type: Number, default: 0 },
     monthlyLimitResetAt: { type: Date, default: () => new Date() },

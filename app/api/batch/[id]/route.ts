@@ -52,7 +52,7 @@ export async function GET(
       return NextResponse.json({ success: false, message: "Invalid batch ID." }, { status: 400 });
     }
 
-    // Load job — only return jobs owned by this user (security)
+    // Load job - only return jobs owned by this user (security)
     const job = await BatchJob.findOne({
       _id: new mongoose.Types.ObjectId(id),
       userId: new mongoose.Types.ObjectId(authenticatedUserId),

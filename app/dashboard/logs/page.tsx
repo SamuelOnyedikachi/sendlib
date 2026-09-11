@@ -169,7 +169,7 @@ export default function LogsPage() {
               logs.map((log: EmailLog) => (
                 <tr key={log.id} className="hover:bg-muted/30 transition-colors">
                   <td className="px-6 py-4 font-mono text-xs text-muted-foreground whitespace-nowrap">
-                    {log.from ? redactEmail(log.from) : "—"}
+                    {log.from ? redactEmail(log.from) : "-"}
                   </td>
                   <td className="px-6 py-4 font-semibold text-foreground whitespace-nowrap">
                     {redactEmail(log.to)}
@@ -269,7 +269,7 @@ export default function LogsPage() {
                   <div className="p-4 flex flex-col gap-1">
                     <span className="text-xs font-semibold text-secondary">From (Sender)</span>
                     <span className="text-sm font-mono text-on-background break-all">
-                      {selectedLog.from ? redactEmail(selectedLog.from) : "—"}
+                      {selectedLog.from ? redactEmail(selectedLog.from) : "-"}
                     </span>
                   </div>
 
@@ -318,7 +318,7 @@ export default function LogsPage() {
                   <div className="p-4 rounded-xl border border-indigo-100 bg-indigo-50/20 space-y-1.5">
                     <span className="text-xs font-semibold text-indigo-700 block">Upstream Message ID</span>
                     <code className="text-xs font-mono text-indigo-900 bg-indigo-50/50 p-2 rounded border border-indigo-100/50 block break-all select-all">
-                      {selectedLog.messageId || "—"}
+                      {selectedLog.messageId || "-"}
                     </code>
                   </div>
                 ) : (

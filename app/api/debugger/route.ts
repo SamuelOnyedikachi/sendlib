@@ -147,14 +147,14 @@ export async function POST(req: NextRequest) {
           label: "Gmail accepted request",
           ok: true,
           skipped: true,
-          detail: "Dry run — Gmail was not called.",
+          detail: "Dry run - Gmail was not called.",
         },
         {
           key: "sent",
           label: "Message sent",
           ok: true,
           skipped: true,
-          detail: "Dry run — no email was delivered.",
+          detail: "Dry run - no email was delivered.",
         },
       ];
       const report = buildDebugReport({ issues, steps, html, text, templateSlug });

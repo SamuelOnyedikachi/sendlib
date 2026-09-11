@@ -10,6 +10,7 @@ import argon2 from "argon2";
 import mongoose from "mongoose";
 import { rateLimit } from "@/lib/rateLimit";
 import { z } from "zod";
+import { getEffectiveUserPlan } from "@/lib/paystack";
 
 
 const MAX_SUBJECT_LENGTH = 998;
@@ -97,7 +98,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: "User account not found." }, { status: 404 });
     }
 
-    if (user.plan !== "pro") {
+    if (getEffectiveUserPlan(user) !== "pro") {
       return NextResponse.json(
         {
           success: false,
@@ -239,7 +240,7 @@ export async function POST(req: NextRequest) {
       expiresAt,
     });
 
-    // 6. Push the job ID into the Redis queue — worker picks it up immediately
+    // 6. Push the job ID into the Redis queue - worker picks it up immediately
     await enqueueBatchJob(job._id.toString());
     console.log(`[API /batch] Successfully created and enqueued job: ${job._id.toString()}`);
 

@@ -479,7 +479,7 @@ export default function HomeClient() {
                   </h3>
                   <div className="flex items-end gap-1 mt-1">
                     <span className="text-4xl font-extrabold text-primary-sendlib">
-                      $3.99
+                      ₦15,000
                     </span>
                     <span className="text-secondary mb-1">/ month</span>
                   </div>
@@ -526,8 +526,8 @@ export default function HomeClient() {
                   {user?.plan === "pro"
                     ? "Manage Subscription"
                     : user
-                      ? "Upgrade to Pro ($3.99/mo)"
-                      : "Get Started Pro ($3.99/mo)"}
+                      ? "Upgrade to Pro (₦15,000/mo)"
+                      : "Get Started Pro (₦15,000/mo)"}
                 </Link>
               </div>
             </div>

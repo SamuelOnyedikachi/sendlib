@@ -146,9 +146,14 @@ To get Sendlib up and running on your local machine, follow these steps:
     GITHUB_CLIENT_ID=your_github_client_id
     GITHUB_CLIENT_SECRET=your_github_client_secret
 
-    # Public env vars (exposed to browser)
+    # Public env vars
     NEXT_PUBLIC_APP_URL=http://localhost:3000
-    # NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_live_... (if using Paystack)
+    NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_live_...
+
+    # Paystack Billing (Recurring Subscriptions)
+    PAYSTACK_SECRET_KEY=sk_live_...
+    PAYSTACK_PUBLIC_KEY=pk_live_...
+    PAYSTACK_PLAN_CODE=PLN_...
     ```
 
     *   **MONGODB\_URI**: Your MongoDB connection string.
@@ -182,8 +187,8 @@ curl -X POST http://localhost:3000/api/send \
     "from": "sender@gmail.com",
     "to": "user@example.com",
     "subject": "Hello via Sendlib Webhook!",
-    "html": "<p>This email was sent with <strong>Sendlib</strong> — delivering straight to your customers!</p>",
-    "text": "This email was sent with Sendlib — delivering straight to your customers!",
+    "html": "<p>This email was sent with <strong>Sendlib</strong>, delivering straight to your customers!</p>",
+    "text": "This email was sent with Sendlib, delivering straight to your customers!",
     "replyTo": "support@yourdomain.com",
     "cc": "anotheruser@example.com",
     "bcc": ["audit@example.com"],

@@ -3,14 +3,6 @@
 import { HugeiconsIcon } from '@hugeicons/react';
 import { UserIcon, PencilEdit01Icon, FloppyDiskIcon, Logout01Icon, Delete02Icon } from '@hugeicons/core-free-icons';
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useMe, useUpdateProfile, useLogout } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -36,17 +28,15 @@ export default function SettingsPage() {
   const [cancelSubConfirmOpen, setCancelSubConfirmOpen] = useState(false);
   const [isCancelingSub, setIsCancelingSub] = useState(false);
   const [isRedirectingCheckout, setIsRedirectingCheckout] = useState(false);
-  const [currencyModalOpen, setCurrencyModalOpen] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState("NGN");  // Default to NGN since primary audience is Nigerian
   const router = useRouter();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
-      const checkoutId = urlParams.get("checkout_id");
-      if (urlParams.get("billing") === "success") {
-        toast.loading("Verifying payment with Bachs...", { id: "billing-verify" });
-        fetch(`/api/billing/verify?checkout_id=${checkoutId || ""}`)
+      const reference = urlParams.get("reference") || urlParams.get("trxref") || urlParams.get("checkout_id");
+      if (urlParams.get("billing") === "success" || (reference && urlParams.get("billing") !== "cancel")) {
+        toast.loading("Verifying payment...", { id: "billing-verify" });
+        fetch(`/api/billing/verify?reference=${reference || ""}`)
           .then((res) => res.json())
           .then((data) => {
             if (data.success && data.verified) {
@@ -69,11 +59,7 @@ export default function SettingsPage() {
     }
   }, []);
 
-  const handleBachsCheckout = async () => {
-    setCurrencyModalOpen(true);
-  };
-
-  const processCheckout = async () => {
+  const handleCheckout = async () => {
     try {
       setIsRedirectingCheckout(true);
       const res = await fetch("/api/billing/checkout", { method: "POST" });
@@ -88,18 +74,6 @@ export default function SettingsPage() {
     } finally {
       setIsRedirectingCheckout(false);
     }
-  };
-
-  const handleCurrencySubmit = () => {
-    updateProfile(
-      { billingCurrency: selectedCurrency },
-      {
-        onSuccess: () => {
-          setCurrencyModalOpen(false);
-          processCheckout();
-        },
-      }
-    );
   };
 
   const { mutate: deleteAccount, isPending: isDeletingAccount } = useMutation({
@@ -207,19 +181,19 @@ export default function SettingsPage() {
                 {isPro
                   ? isCanceled 
                     ? "Your Pro Plan has been canceled and will not renew. You still have access to Pro features until the end of your billing cycle."
-                    : "You're on the Pro Plan ($3.99/mo). You get 300 req/min, up to 50 connected accounts, 90-day log retention, and batch email sending."
-                  : "You are on the Free Plan. Upgrade to Pro for $3.99/month — unlock 300 req/min, 50 connected accounts, 90-day logs, and batch email sending to up to 1,000 recipients per call."}
+                    : "You're on the Pro Plan (₦15,000/mo). You get 300 req/min, up to 50 connected accounts, 90-day log retention, and batch email sending."
+                  : "You are on the Free Plan. Upgrade to Pro for ₦15,000/month - unlock 300 req/min, 50 connected accounts, 90-day logs, and batch email sending to up to 1,000 recipients per call."}
               </p>
 
               {!isPro ? (
                 <Button
                   className="font-label-sm rounded-lg bg-emerald-500 hover:bg-emerald-600 text-black border-0 font-bold cursor-pointer active:scale-95 transition-all shadow-sm disabled:opacity-50"
-                  onClick={handleBachsCheckout}
+                  onClick={handleCheckout}
                   disabled={isRedirectingCheckout}
                 >
                   <HugeiconsIcon icon={CreditCardIcon} size={16} color='currentColor' strokeWidth={1.5} />
                   <span className="ml-2">
-                    {isRedirectingCheckout ? "Initializing Bachs Checkout..." : "Upgrade to Pro ($3.99/mo)"}
+                    {isRedirectingCheckout ? "Initializing Checkout..." : "Upgrade to Pro (₦15,000/mo)"}
                   </span>
                 </Button>
               ) : (
@@ -234,10 +208,10 @@ export default function SettingsPage() {
                       Cancel Subscription
                     </Button>
                   )}
-                  {user?.lastPaymentAt && (
+                  {(user?.currentPeriodEnd || user?.lastPaymentAt) && (
                     <span className="text-[10px] font-medium text-secondary">
-                      {isCanceled ? "Cancels on: " : "Renews on: "}
-                      {new Date(new Date(user.lastPaymentAt).setMonth(new Date(user.lastPaymentAt).getMonth() + 1)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      {isCanceled ? "Access ends on: " : "Renews on: "}
+                      {new Date(user.currentPeriodEnd || new Date(new Date(user.lastPaymentAt!).setMonth(new Date(user.lastPaymentAt!).getMonth() + 1))).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </span>
                   )}
                 </div>
@@ -446,49 +420,6 @@ export default function SettingsPage() {
               disabled={isCancelingSub}
             >
               {isCancelingSub ? "Canceling..." : "Cancel Subscription"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-      {/* Currency / Location Dialog */}
-      <Dialog open={currencyModalOpen} onOpenChange={setCurrencyModalOpen}>
-        <DialogContent>
-          <DialogHeader className="mb-2">
-            <DialogTitle className="text-xl font-headline-md font-bold text-primary-sendlib">Select Currency</DialogTitle>
-            <DialogDescription className="text-secondary text-sm leading-relaxed mt-1">
-              What currency would you like to pay in? Select your preferred currency below.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="my-4">
-            <label className="text-xs font-label-xs uppercase tracking-wider text-on-background/60 mb-2 block font-semibold">
-              Preferred Currency
-            </label>
-            <Select value={selectedCurrency} onValueChange={(val) => setSelectedCurrency(val as string)}>
-              <SelectTrigger className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3.5 py-2.5 h-[42px] text-sm text-on-background font-medium outline-none cursor-pointer focus:border-primary-sendlib focus:ring-1 focus:ring-primary-sendlib/20 transition-colors">
-                <SelectValue placeholder="Select a currency" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="NGN">NGN – Nigerian Naira</SelectItem>
-                <SelectItem value="GHS">GHS – Ghanaian Cedi</SelectItem>
-                <SelectItem value="USD">USD – US Dollar</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-row gap-3 mt-2 pt-4 border-t border-outline-variant/60">
-            <Button 
-              variant="outline" 
-              className="flex-1 rounded-lg font-label-sm border border-outline-variant hover:bg-surface-container-low text-on-background" 
-              onClick={() => setCurrencyModalOpen(false)}
-              disabled={isUpdating}
-            >
-              Cancel
-            </Button>
-            <Button 
-              className="flex-1 rounded-lg font-label-sm bg-emerald-500 hover:bg-emerald-600 text-black border-0 font-bold" 
-              onClick={handleCurrencySubmit}
-              disabled={isUpdating}
-            >
-              {isUpdating ? "Saving..." : "Continue to Checkout"}
             </Button>
           </div>
         </DialogContent>

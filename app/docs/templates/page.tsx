@@ -108,9 +108,9 @@ requests.post(
         </div>
 
         <div className="rounded-xl border border-outline-variant bg-surface-container-low p-4 text-sm space-y-2">
-          <p><strong className="text-primary-sendlib">from</strong> — optional if you have one Gmail connected. Required if you have several.</p>
-          <p><strong className="text-primary-sendlib">Missing data</strong> — the API returns 400 listing the empty <code>{"{{variables}}"}</code>.</p>
-          <p><strong className="text-primary-sendlib">Custom HTML</strong> — omit <code>template</code> and send <code>subject</code> + <code>html</code> as before.</p>
+          <p><strong className="text-primary-sendlib">from</strong>: optional if you have one Gmail connected. Required if you have several.</p>
+          <p><strong className="text-primary-sendlib">Missing data</strong>: the API returns 400 listing the empty <code>{"{{variables}}"}</code>.</p>
+          <p><strong className="text-primary-sendlib">Custom HTML</strong>: omit <code>template</code> and send <code>subject</code> + <code>html</code> as before.</p>
         </div>
       </div>
 

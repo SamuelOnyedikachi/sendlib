@@ -1,7 +1,7 @@
 // This module is server-side only (API routes, lib/ functions).
 // It creates an axios instance with an IPv4-only HTTPS agent to prevent
 // ETIMEDOUT errors on Zeabur, which drops IPv6 traffic silently.
-// DO NOT import this on the client side — use plain axios instead.
+// DO NOT import this on the client side - use plain axios instead.
 import axios from "axios";
 
 let axiosInstance: ReturnType<typeof axios.create>;
