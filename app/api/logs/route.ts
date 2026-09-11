@@ -3,6 +3,7 @@ import { requireAuthUser } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import EmailLog, { IEmailLog } from "@/models/EmailLog";
 import User from "@/models/User";
+import { getEffectiveUserPlan } from "@/lib/paystack";
 import mongoose, { FilterQuery } from "mongoose";
 
 export async function GET(req: NextRequest) {
@@ -19,8 +20,9 @@ export async function GET(req: NextRequest) {
 
     await connectDB();
 
-    const dbUser = await User.findById(user.id).select("plan").lean();
-    const retentionDays = dbUser?.plan === "pro" ? 90 : 5;
+    const dbUser = await User.findById(user.id).select("plan currentPeriodEnd lastPaymentAt subscriptionStatus").lean();
+    const effectivePlan = getEffectiveUserPlan(dbUser);
+    const retentionDays = effectivePlan === "pro" ? 90 : 5;
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - retentionDays);
 

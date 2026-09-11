@@ -51,7 +51,7 @@ export function useMe() {
 export function useUpdateProfile() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: { displayName?: string; billingCurrency?: string }) => {
+    mutationFn: async (data: { displayName?: string }) => {
       const res = await api.patch<never, { success: boolean; data: User }>("/user", data);
       return res.data;
     },

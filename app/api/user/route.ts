@@ -38,7 +38,7 @@ export async function PATCH(req: NextRequest) {
     const authUser = await requireAuthUser(req);
     await connectDB();
 
-    const { displayName: rawDisplayName, billingCurrency } = await req.json();
+    const { displayName: rawDisplayName } = await req.json();
     const updateData: Record<string, any> = {};
 
     if (rawDisplayName !== undefined) {
@@ -50,14 +50,6 @@ export async function PATCH(req: NextRequest) {
         return NextResponse.json({ success: false, message: "Display name is too long. Max 35 characters." }, { status: 400 });
       }
       updateData.displayName = displayName;
-    }
-
-    if (billingCurrency !== undefined) {
-      const ALLOWED_CURRENCIES = ["USD", "NGN", "GHS", "EUR", "GBP", "KES", "ZAR", "CAD", "AUD"];
-      if (!ALLOWED_CURRENCIES.includes(String(billingCurrency).toUpperCase())) {
-        return NextResponse.json({ success: false, message: "Invalid billing currency." }, { status: 400 });
-      }
-      updateData.billingCurrency = String(billingCurrency).toUpperCase();
     }
 
     if (Object.keys(updateData).length === 0) {

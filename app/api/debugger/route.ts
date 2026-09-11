@@ -9,14 +9,16 @@ import mongoose from "mongoose";
 import { interpolate, isValidSlug } from "@/lib/templates";
 import { analyzeHtmlIssues, buildDebugReport, formatHtmlSize, type DebugStep } from "@/lib/emailDebugger";
 import { sendGmailEmail } from "@/lib/gmail";
+import { getEffectiveUserPlan } from "@/lib/paystack";
 
 export async function GET(req: NextRequest) {
   try {
     const user = await requireAuthUser(req);
     await connectDB();
 
-    const dbUser = await User.findById(user.id).select("plan").lean();
-    const retentionDays = dbUser?.plan === "pro" ? 90 : 5;
+    const dbUser = await User.findById(user.id).select("plan currentPeriodEnd lastPaymentAt subscriptionStatus").lean();
+    const effectivePlan = getEffectiveUserPlan(dbUser);
+    const retentionDays = effectivePlan === "pro" ? 90 : 5;
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - retentionDays);
 
@@ -188,8 +190,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const dbUser = await User.findById(user.id).select("plan").lean();
-    const plan = dbUser?.plan === "pro" ? "pro" : "free";
+    const dbUser = await User.findById(user.id).select("plan currentPeriodEnd lastPaymentAt subscriptionStatus").lean();
+    const plan = getEffectiveUserPlan(dbUser);
     const retentionDays = plan === "pro" ? 90 : 5;
 
     try {

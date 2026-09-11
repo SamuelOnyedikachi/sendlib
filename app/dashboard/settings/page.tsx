@@ -409,13 +409,13 @@ export default function SettingsPage() {
                   const res = await fetch("/api/billing/cancel", { method: "POST" });
                   const data = await res.json();
                   if (data.success) {
-                    import("sonner").then(m => m.toast.success("Subscription canceled."));
+                    toast.success("Subscription canceled.");
                     window.location.reload();
                   } else {
-                    import("sonner").then(m => m.toast.error(data.message || "Failed to cancel"));
+                    toast.error(data.message || "Failed to cancel");
                   }
                 } catch {
-                  import("sonner").then(m => m.toast.error("Error canceling subscription"));
+                  toast.error("Error canceling subscription");
                 } finally {
                   setIsCancelingSub(false);
                   setCancelSubConfirmOpen(false);
