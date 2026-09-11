@@ -1,5 +1,5 @@
 FROM node:23-alpine AS base
-RUN apk add --no-cache tini && npm install -g pnpm@latest
+RUN apk add --no-cache tini && npm install -g pnpm@9
 
 FROM base AS deps
 WORKDIR /app
