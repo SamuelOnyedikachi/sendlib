@@ -4,7 +4,7 @@ RUN apk add --no-cache tini && npm install -g pnpm@latest
 FROM base AS deps
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile --ignore-scripts && pnpm rebuild argon2 sharp
+RUN pnpm install --frozen-lockfile
 
 FROM base AS builder
 WORKDIR /app
