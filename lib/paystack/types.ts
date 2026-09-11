@@ -1,6 +1,6 @@
 export interface InitializeTransactionOptions {
   email: string;
-  amount?: number; // In kobo (e.g. 1500000 kobo for NGN 15,000)
+  amount?: number; // In kobo (e.g. 400000 kobo for NGN 4,000)
   plan?: string; // Paystack Plan Code e.g. PLN_...
   callbackUrl?: string;
   metadata?: Record<string, unknown>;

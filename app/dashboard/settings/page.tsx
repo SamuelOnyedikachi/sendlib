@@ -181,8 +181,8 @@ export default function SettingsPage() {
                 {isPro
                   ? isCanceled 
                     ? "Your Pro Plan has been canceled and will not renew. You still have access to Pro features until the end of your billing cycle."
-                    : "You're on the Pro Plan (₦15,000/mo). You get 300 req/min, up to 50 connected accounts, 90-day log retention, and batch email sending."
-                  : "You are on the Free Plan. Upgrade to Pro for ₦15,000/month - unlock 300 req/min, 50 connected accounts, 90-day logs, and batch email sending to up to 1,000 recipients per call."}
+                    : "You're on the Pro Plan (₦4,000/mo). You get 300 req/min, up to 50 connected accounts, 90-day log retention, and batch email sending."
+                  : "You are on the Free Plan. Upgrade to Pro for ₦4,000/month - unlock 300 req/min, 50 connected accounts, 90-day logs, and batch email sending to up to 1,000 recipients per call."}
               </p>
 
               {!isPro ? (
@@ -193,7 +193,7 @@ export default function SettingsPage() {
                 >
                   <HugeiconsIcon icon={CreditCardIcon} size={16} color='currentColor' strokeWidth={1.5} />
                   <span className="ml-2">
-                    {isRedirectingCheckout ? "Initializing Checkout..." : "Upgrade to Pro (₦15,000/mo)"}
+                    {isRedirectingCheckout ? "Initializing Checkout..." : "Upgrade to Pro (₦4,000/mo)"}
                   </span>
                 </Button>
               ) : (
