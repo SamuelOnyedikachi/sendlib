@@ -17,6 +17,7 @@ import {
   ArrowLeftDoubleIcon,
   Layout01Icon,
   SearchVisualIcon,
+  Shield01Icon,
 } from '@hugeicons/core-free-icons';
 import { Button } from "@/components/ui/button";
 import { useMe, useLogout } from "@/hooks/useAuth";
@@ -73,6 +74,7 @@ export default function DashboardLayout({
     { name: "Templates", href: "/dashboard/templates", icon: Layout01Icon },
     { name: "Debugger", href: "/dashboard/debugger", icon: SearchVisualIcon },
     { name: "Email Logs", href: "/dashboard/logs", icon: FileTypeIcon },
+    { name: "Security", href: "/dashboard/security", icon: Shield01Icon },
     { name: "Settings", href: "/dashboard/settings", icon: Settings01Icon },
   ];
 
@@ -111,7 +113,7 @@ export default function DashboardLayout({
       {/* Main Content Wrapper */}
       <div className={`flex-1 min-w-0 flex flex-col min-h-screen transition-all duration-300 ease-in-out ${isSidebarCollapsed ? "lg:pl-0" : "lg:pl-56"}`}>
         {/* Top Header - No border as requested */}
-        <header className="sticky top-0 z-40 w-full bg-transparent backdrop-blur-md">
+        <header className="sticky top-0 z-40 w-full bg-background-sendlib">
           <div className="mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
             
             {/* Left: Sidebar Toggle (Desktop) & Mobile Brand */}

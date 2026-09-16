@@ -136,6 +136,14 @@ To get Sendlib up and running on your local machine, follow these steps:
     # Auth
     JWT_SECRET=your_random_64_char_hex_string_here
     ENCRYPTION_KEY=a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2
+    EMAIL_TRANSPORT=smtp
+    AUTH_EMAIL_FROM=no-reply@sendlib.com
+    AUTH_EMAIL_NAME=Sendlib
+    SMTP_HOST=smtp.example.com
+    SMTP_PORT=465
+    SMTP_USER=your_smtp_username
+    SMTP_PASS=your_smtp_password
+    SMTP_SECURE=true
 
     # Google OAuth (for login AND Gmail connect same credentials)
     GOOGLE_CLIENT_ID=your_google_client_id
@@ -149,6 +157,7 @@ To get Sendlib up and running on your local machine, follow these steps:
     # Public env vars
     NEXT_PUBLIC_APP_URL=http://localhost:3000
     NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_live_...
+    REDIS_URL=redis://localhost:6379
 
     # Paystack Billing (Recurring Subscriptions)
     PAYSTACK_SECRET_KEY=sk_live_...
@@ -159,6 +168,10 @@ To get Sendlib up and running on your local machine, follow these steps:
     *   **MONGODB\_URI**: Your MongoDB connection string.
     *   **JWT\_SECRET**: A long, random string for JWT signing. You can generate one with `node -e "console.log(crypto.randomBytes(32).toString('hex'))"`.
     *   **ENCRYPTION\_KEY**: A 64-character hex string (32 bytes) for encrypting sensitive data like Gmail tokens. Generate with `node -e "console.log(crypto.randomBytes(32).toString('hex'))"`.
+    *   **EMAIL_TRANSPORT**: Set to `smtp` in production. Leave unset or set to `json` for local development logging.
+    *   **AUTH_EMAIL_FROM** / **AUTH_EMAIL_NAME**: Sender identity for transactional auth emails.
+    *   **SMTP_HOST** / **SMTP_PORT** / **SMTP_USER** / **SMTP_PASS** / **SMTP_SECURE**: SMTP delivery settings for verification, reset, 2FA, and security emails.
+    *   **REDIS_URL**: Enables shared rate limiting across instances; without it, the app falls back to in-process limits.
     *   **GOOGLE\_CLIENT\_ID** / **GOOGLE\_CLIENT\_SECRET**: Obtain these from the Google Cloud Console for OAuth. Make sure to add `http://localhost:3000/api/auth/google/callback` and `http://localhost:3000/api/gmail/callback` to your authorized redirect URIs.
     *   **GITHUB\_CLIENT\_ID** / **GITHUB\_CLIENT\_SECRET**: Obtain these from your GitHub OAuth Apps settings. Add `http://localhost:3000/api/auth/github/callback` to your authorized redirect URIs.
     *   **NEXT\_PUBLIC\_APP\_URL**: The public URL of your application. Use `http://localhost:3000` for local development.

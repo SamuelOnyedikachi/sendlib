@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "@/lib/axios";
 import { connectDB } from "@/lib/db";
-import { generateAccessToken } from "@/lib/auth";
+import { setAuthCookies, getClientIp } from "@/lib/auth";
+import { createSession } from "@/lib/auth/sessions";
+import { normalizeEmail } from "@/lib/auth/utils";
 import User from "@/models/User";
 
 const { NEXT_PUBLIC_APP_URL } = process.env;
+
+interface GoogleUserInfo {
+  id?: string;
+  email?: string;
+  name?: string;
+  picture?: string;
+  verified_email?: boolean;
+}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -33,10 +43,10 @@ export async function GET(req: NextRequest) {
     );
     const tokens = tokenRes.data;
 
-    const userInfoRes = await axios.get("https://www.googleapis.com/oauth2/v2/userinfo", {
+    const userInfoRes = await axios.get<GoogleUserInfo>("https://www.googleapis.com/oauth2/v2/userinfo", {
       headers: { Authorization: `Bearer ${tokens.access_token}` },
     });
-    const { id, email, name, picture } = userInfoRes.data;
+    const { id, email, name, picture, verified_email } = userInfoRes.data;
 
     if (!id) {
       return NextResponse.redirect(`${NEXT_PUBLIC_APP_URL}/login?error=google_profile`);
@@ -44,9 +54,12 @@ export async function GET(req: NextRequest) {
 
     await connectDB();
 
+    const hasVerifiedEmail = Boolean(email && verified_email);
+    const normalizedEmail = hasVerifiedEmail ? normalizeEmail(email) : undefined;
+
     let user = await User.findOne({ googleId: id });
-    if (!user && email) {
-      user = await User.findOne({ email });
+    if (!user && normalizedEmail) {
+      user = await User.findOne({ email: normalizedEmail });
       if (user) {
         user.googleId = id;
         user.avatar = picture ?? user.avatar;
@@ -58,39 +71,29 @@ export async function GET(req: NextRequest) {
     if (!user) {
       user = await User.create({
         googleId: id,
-        email: email ?? undefined,
-        displayName: name ?? email ?? "User",
+        email: normalizedEmail ?? undefined,
+        displayName: name ?? normalizedEmail ?? "User",
         avatar: picture ?? undefined,
+        emailVerified: hasVerifiedEmail,
+        emailVerifiedAt: hasVerifiedEmail ? new Date() : undefined,
       });
     } else {
       user.avatar = picture ?? user.avatar;
       user.displayName = name ?? user.displayName;
-      if (email && !user.email) user.email = email;
+      if (normalizedEmail && !user.email) user.email = normalizedEmail;
+      if (normalizedEmail) user.email = normalizedEmail;
       await user.save();
     }
 
-    const jwt = generateAccessToken({
-      id: user._id.toString(),
-      email: user.email ?? null,
-      displayName: user.displayName,
+    const { token } = await createSession({
+      userId: user._id.toString(),
+      userAgent: req.headers.get("user-agent") ?? undefined,
+      ip: getClientIp(req),
+      status: "active",
     });
 
     const response = NextResponse.redirect(`${NEXT_PUBLIC_APP_URL}/dashboard`);
-    response.cookies.set("access_token", jwt, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
-      path: "/",
-    });
-    response.cookies.set("logged_in", "true", {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
-      path: "/",
-    });
-
+    setAuthCookies(response, token);
     return response;
   } catch (err) {
     console.error("Google OAuth callback error:", err);
