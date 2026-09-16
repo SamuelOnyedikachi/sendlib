@@ -17,6 +17,7 @@ import {
   ArrowLeftDoubleIcon,
   Layout01Icon,
   SearchVisualIcon,
+  Shield01Icon,
 } from '@hugeicons/core-free-icons';
 import { Button } from "@/components/ui/button";
 import { useMe, useLogout } from "@/hooks/useAuth";
@@ -73,6 +74,7 @@ export default function DashboardLayout({
     { name: "Templates", href: "/dashboard/templates", icon: Layout01Icon },
     { name: "Debugger", href: "/dashboard/debugger", icon: SearchVisualIcon },
     { name: "Email Logs", href: "/dashboard/logs", icon: FileTypeIcon },
+    { name: "Security", href: "/dashboard/security", icon: Shield01Icon },
     { name: "Settings", href: "/dashboard/settings", icon: Settings01Icon },
   ];
 

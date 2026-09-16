@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "@/lib/axios";
 import { connectDB } from "@/lib/db";
-import { generateAccessToken } from "@/lib/auth";
+import { setAuthCookies, getClientIp } from "@/lib/auth";
+import { createSession } from "@/lib/auth/sessions";
+import { normalizeEmail } from "@/lib/auth/utils";
 import User from "@/models/User";
 
 const { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, NEXT_PUBLIC_APP_URL } = process.env;
@@ -47,25 +49,20 @@ export async function GET(req: NextRequest) {
     const profileRes = await axios.get<GithubProfile>("https://api.github.com/user", {
       headers: { Authorization: `Bearer ${access_token}` },
     });
-    const profile = profileRes.data;
-
-    // Fetch primary email if not in profile
-    let email = profile.email;
-    if (!email) {
-      const emailRes = await axios.get<GithubEmail[]>("https://api.github.com/user/emails", {
-        headers: { Authorization: `Bearer ${access_token}` },
-      });
-      const primary = emailRes.data.find((e) => e.primary && e.verified);
-      email = primary?.email ?? null;
-    }
+    const profile = profileRes.data;    // Fetch verified primary email for account linking and verification
+    const emailRes = await axios.get<GithubEmail[]>("https://api.github.com/user/emails", {
+      headers: { Authorization: `****** },
+    });
+    const email = emailRes.data.find((e) => e.primary && e.verified)?.email ?? null;
 
     await connectDB();
 
     const githubId = String(profile.id);
+    const normalizedEmail = email ? normalizeEmail(email) : undefined;
     let user = await User.findOne({ githubId });
 
-    if (!user && email) {
-      user = await User.findOne({ email });
+    if (!user && normalizedEmail) {
+      user = await User.findOne({ email: normalizedEmail });
       if (user) {
         user.githubId = githubId;
         user.avatar = profile.avatar_url;
@@ -77,38 +74,28 @@ export async function GET(req: NextRequest) {
     if (!user) {
       user = await User.create({
         githubId,
-        email: email ?? undefined,
+        email: normalizedEmail ?? undefined,
         displayName: profile.name ?? profile.login,
         avatar: profile.avatar_url,
+        emailVerified: Boolean(normalizedEmail),
+        emailVerifiedAt: normalizedEmail ? new Date() : undefined,
       });
     } else {
       user.avatar = profile.avatar_url;
       user.displayName = profile.name ?? profile.login;
-      if (email && !user.email) user.email = email;
+      if (normalizedEmail) user.email = normalizedEmail;
       await user.save();
     }
 
-    const jwt = generateAccessToken({
-      id: user._id.toString(),
-      email: user.email ?? null,
-      displayName: user.displayName,
+    const { token } = await createSession({
+      userId: user._id.toString(),
+      userAgent: req.headers.get("user-agent") ?? undefined,
+      ip: getClientIp(req),
+      status: "active",
     });
 
     const response = NextResponse.redirect(`${NEXT_PUBLIC_APP_URL}/dashboard`);
-    response.cookies.set("access_token", jwt, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: "/",
-    });
-    response.cookies.set("logged_in", "true", {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: "/",
-    });
+    setAuthCookies(response, token);
 
     return response;
   } catch (err) {
