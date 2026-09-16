@@ -200,7 +200,7 @@ function AccountsContent() {
       )}
 
       {/* Gmail Connected Celebration Dialog */}
-      <Dialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
+      <Dialog open={successDialogOpen} onOpenChange={(open) => { if (!open) window.location.reload(); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader className="mb-2">
             <DialogTitle className="text-xl font-headline-md font-bold text-primary-sendlib flex items-center gap-2">
@@ -214,7 +214,7 @@ function AccountsContent() {
             <Button 
               variant="outline" 
               className="flex-1 rounded-lg font-label-sm border border-outline-variant hover:bg-surface-container-low text-on-background cursor-pointer" 
-              onClick={() => setSuccessDialogOpen(false)}
+              onClick={() => window.location.reload()}
             >
               Dismiss
             </Button>
