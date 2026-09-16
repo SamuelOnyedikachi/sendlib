@@ -30,7 +30,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       message: GENERIC_MESSAGE,
-      emailSent: result.emailSent,
     });
   } catch (err) {
     return authErrorResponse(err);
