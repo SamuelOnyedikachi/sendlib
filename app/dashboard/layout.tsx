@@ -113,7 +113,7 @@ export default function DashboardLayout({
       {/* Main Content Wrapper */}
       <div className={`flex-1 min-w-0 flex flex-col min-h-screen transition-all duration-300 ease-in-out ${isSidebarCollapsed ? "lg:pl-0" : "lg:pl-56"}`}>
         {/* Top Header - No border as requested */}
-        <header className="sticky top-0 z-40 w-full bg-transparent backdrop-blur-md">
+        <header className="sticky top-0 z-40 w-full bg-background-sendlib">
           <div className="mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
             
             {/* Left: Sidebar Toggle (Desktop) & Mobile Brand */}

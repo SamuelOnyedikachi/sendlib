@@ -40,25 +40,42 @@ function AccountsContent() {
 
     if (searchParams.get("gmail_connected") === "true") {
       handledRef.current = true;
-      confetti({
-        particleCount: 300,
-        spread: 120,
-        origin: { y: 0.6 }
-      });
-      setTimeout(() => setSuccessDialogOpen(true), 0);
-      toast.success("Gmail account connected successfully!");
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } else if (searchParams.get("gmail_updated") === "true") {
+      // Store the signal then hard-redirect to clean URL so the param is truly gone
+      sessionStorage.setItem("gmail_just_connected", "1");
+      window.location.replace(window.location.pathname);
+      return;
+    }
+
+    if (searchParams.get("gmail_updated") === "true") {
       handledRef.current = true;
       const email = searchParams.get("email");
+      sessionStorage.setItem("gmail_just_updated", email ?? "1");
+      window.location.replace(window.location.pathname);
+      return;
+    }
+
+    // After the hard redirect, pick up the signal from sessionStorage
+    const justConnected = sessionStorage.getItem("gmail_just_connected");
+    if (justConnected) {
+      sessionStorage.removeItem("gmail_just_connected");
+      confetti({ particleCount: 300, spread: 120, origin: { y: 0.6 } });
+      setTimeout(() => setSuccessDialogOpen(true), 0);
+      toast.success("Gmail account connected successfully!");
+      return;
+    }
+
+    const justUpdated = sessionStorage.getItem("gmail_just_updated");
+    if (justUpdated) {
+      sessionStorage.removeItem("gmail_just_updated");
+      const email = justUpdated === "1" ? null : justUpdated;
       toast.success(
         email
           ? `Gmail account (${email}) re-authenticated & tokens updated!`
           : "Gmail account re-authenticated & tokens updated!"
       );
-      window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, [searchParams]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const isPro = user?.plan === "pro";
   const maxAccounts = isPro ? 50 : 3;

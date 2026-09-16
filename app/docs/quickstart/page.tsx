@@ -48,7 +48,7 @@ export default function QuickstartPage() {
             Send your first email
           </h3>
           <p className="text-secondary mb-4">Make a standard HTTP POST request from your application:</p>
-          <pre className="p-4 bg-surface-container-high border border-outline-variant/50 rounded-lg text-sm font-mono text-white/90 whitespace-pre-wrap">
+          <pre className="p-4 bg-surface-container-high border border-outline-variant/50 rounded-lg text-sm font-mono text-white/90 overflow-x-auto whitespace-pre custom-scrollbar">
 {`curl -X POST ${apiUrl}/api/send \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
