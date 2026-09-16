@@ -202,6 +202,10 @@ export default function LoginPage() {
   </div>
   );
 
+  const normalizedTwoFactorCode = code.replace(/[- ]/g, "");
+  const isTwoFactorCodeValid =
+    /^\d{6}$/.test(code) || /^[A-F0-9]{16}$/.test(normalizedTwoFactorCode);
+
   return (
     <AuthShell
       title="Welcome to Sendlib"
@@ -281,14 +285,21 @@ export default function LoginPage() {
             <FormField label="Authenticator code" htmlFor="login-2fa-code">
               <Input
                 id="login-2fa-code"
-                inputMode="numeric"
+                inputMode="text"
                 autoComplete="one-time-code"
-                maxLength={6}
+                maxLength={19}
                 required
                 className="h-12 rounded-xl bg-surface px-4 text-center text-lg tracking-[0.4em] font-mono"
-                placeholder="000000"
+                placeholder="000000 or XXXX-XXXX-XXXX-XXXX"
                 value={code}
-                onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ""))}
+                onChange={(e) =>
+                  setCode(
+                    e.target.value
+                      .toUpperCase()
+                      .replace(/[^A-Z0-9- ]/g, "")
+                      .slice(0, 19),
+                  )
+                }
               />
             </FormField>
 
@@ -303,7 +314,7 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              disabled={complete2fa.isPending || code.length !== 6}
+              disabled={complete2fa.isPending || !isTwoFactorCodeValid}
               className="w-full h-12 rounded-xl font-label-sm text-label-sm bg-primary-sendlib text-black hover:opacity-90"
             >
               {complete2fa.isPending ? "Verifying..." : "Verify & Log In"}
