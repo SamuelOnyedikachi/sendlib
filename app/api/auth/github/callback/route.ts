@@ -58,14 +58,23 @@ export async function GET(req: NextRequest) {
     }
 
     // Fetch GitHub profile
-    const profileRes = await axios.get<GithubProfile>("https://api.github.com/user", {
-      headers: { Authorization: `Bearer ${access_token}` },
-    });
-    const profile = profileRes.data;    // Fetch verified primary email for account linking and verification
-    const emailRes = await axios.get<GithubEmail[]>("https://api.github.com/user/emails", {
-      headers: { Authorization: `****** },
-    });
-    const email = emailRes.data.find((e) => e.primary && e.verified)?.email ?? null;
+    const profileRes = await axios.get<GithubProfile>(
+      "https://api.github.com/user",
+      {
+        headers: { Authorization: `Bearer ${access_token}` },
+      },
+    );
+    const profile = profileRes.data;
+
+    // Fetch verified primary email for account linking and verification
+    const emailRes = await axios.get<GithubEmail[]>(
+      "https://api.github.com/user/emails",
+      {
+        headers: { Authorization: `Bearer ${access_token}` },
+      },
+    );
+    const email =
+      emailRes.data.find((e) => e.primary && e.verified)?.email ?? null;
 
     await connectDB();
 
