@@ -10,6 +10,7 @@ import { useSignup, useMe } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { passwordSchema } from "@/lib/auth/passwordPolicy";
+import { SocialButtons } from "@/components/auth/SocialButtons";
 
 const PASSWORD_HINTS = [
   "At least 8 characters",
@@ -92,6 +93,15 @@ export default function SignupPage() {
       title="Create your account"
       subtitle="Free forever for small senders. No credit card required."
     >
+      <SocialButtons />
+
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1 bg-outline-variant" />
+        <span className="font-label-xs text-label-xs text-on-surface-variant">
+          or
+        </span>
+        <div className="h-px flex-1 bg-outline-variant" />
+      </div>
       <form onSubmit={handleSignup} className="space-y-md" noValidate>
         <FormField label="Email address" htmlFor="signup-email">
           <Input
