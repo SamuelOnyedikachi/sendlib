@@ -23,12 +23,16 @@ export async function GET(req: NextRequest) {
   const oauthStateCookie = req.cookies.get("oauth_state")?.value;
 
   if (!code || !stateParam || stateParam !== oauthStateCookie) {
-    return NextResponse.redirect(`${NEXT_PUBLIC_APP_URL}/login?error=invalid_state_or_code`);
+    return NextResponse.redirect(
+      `${NEXT_PUBLIC_APP_URL}/login?error=invalid_state_or_code`,
+    );
   }
 
   try {
-    const redirectUri = process.env.GOOGLE_CALLBACK_URL || `${NEXT_PUBLIC_APP_URL}/api/auth/google/callback`;
-    
+    const redirectUri =
+      process.env.GOOGLE_CALLBACK_URL ||
+      `${NEXT_PUBLIC_APP_URL}/api/auth/google/callback`;
+
     // Use axios instead of googleapis to avoid Zeabur native fetch failures
     const tokenRes = await axios.post(
       "https://oauth2.googleapis.com/token",
@@ -39,23 +43,31 @@ export async function GET(req: NextRequest) {
         redirect_uri: redirectUri,
         grant_type: "authorization_code",
       }).toString(),
-      { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+      { headers: { "Content-Type": "application/x-www-form-urlencoded" } },
     );
     const tokens = tokenRes.data;
 
-    const userInfoRes = await axios.get<GoogleUserInfo>("https://www.googleapis.com/oauth2/v2/userinfo", {
-      headers: { Authorization: `Bearer ${tokens.access_token}` },
-    });
+    const userInfoRes = await axios.get<GoogleUserInfo>(
+      "https://www.googleapis.com/oauth2/v2/userinfo",
+      {
+        headers: { Authorization: `Bearer ${tokens.access_token}` },
+      },
+    );
     const { id, email, name, picture, verified_email } = userInfoRes.data;
 
     if (!id) {
-      return NextResponse.redirect(`${NEXT_PUBLIC_APP_URL}/login?error=google_profile`);
+      return NextResponse.redirect(
+        `${NEXT_PUBLIC_APP_URL}/login?error=google_profile`,
+      );
     }
 
     await connectDB();
 
-    const hasVerifiedEmail = Boolean(email && verified_email);
-    const normalizedEmail = hasVerifiedEmail ? normalizeEmail(email) : undefined;
+    // Narrow email to a string only when it's both present and verified
+    const verifiedEmail = email && verified_email ? email : undefined;
+    const normalizedEmail = verifiedEmail
+      ? normalizeEmail(verifiedEmail)
+      : undefined;
 
     let user = await User.findOne({ googleId: id });
     if (!user && normalizedEmail) {
@@ -74,13 +86,12 @@ export async function GET(req: NextRequest) {
         email: normalizedEmail ?? undefined,
         displayName: name ?? normalizedEmail ?? "User",
         avatar: picture ?? undefined,
-        emailVerified: hasVerifiedEmail,
-        emailVerifiedAt: hasVerifiedEmail ? new Date() : undefined,
+        emailVerified: Boolean(normalizedEmail),
+        emailVerifiedAt: normalizedEmail ? new Date() : undefined,
       });
     } else {
       user.avatar = picture ?? user.avatar;
       user.displayName = name ?? user.displayName;
-      if (normalizedEmail && !user.email) user.email = normalizedEmail;
       if (normalizedEmail) user.email = normalizedEmail;
       await user.save();
     }
@@ -97,6 +108,8 @@ export async function GET(req: NextRequest) {
     return response;
   } catch (err) {
     console.error("Google OAuth callback error:", err);
-    return NextResponse.redirect(`${NEXT_PUBLIC_APP_URL}/login?error=google_callback`);
+    return NextResponse.redirect(
+      `${NEXT_PUBLIC_APP_URL}/login?error=google_callback`,
+    );
   }
 }
