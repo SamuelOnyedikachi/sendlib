@@ -16,7 +16,7 @@ export async function rateLimit(
   plan: "free" | "pro" = "free"
 ): Promise<RateLimitResult> {
   const windowSeconds = 60;
-  const limit = (type === "auth" || type === "login" || type === "signup" || type === "password_reset") ? 10 : plan === "pro" ? 300 : 30;
+  const limit = (type === "auth" || type === "login" || type === "signup" || type === "password_reset") ? 60 : plan === "pro" ? 300 : 30;
   
   const safeKey = crypto.createHash("sha256").update(`${type}:${plan}:${key}`).digest("hex");
   const limitKey = `rl_${safeKey}`;
