@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "@/lib/axios";
 import { connectDB } from "@/lib/db";
-import { generateAccessToken } from "@/lib/auth";
+import { setAuthCookies, getClientIp } from "@/lib/auth";
+import { createSession } from "@/lib/auth/sessions";
+import { normalizeEmail } from "@/lib/auth/utils";
 import User from "@/models/User";
 
 const { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, NEXT_PUBLIC_APP_URL } = process.env;
@@ -62,10 +64,11 @@ export async function GET(req: NextRequest) {
     await connectDB();
 
     const githubId = String(profile.id);
+    const normalizedEmail = email ? normalizeEmail(email) : undefined;
     let user = await User.findOne({ githubId });
 
-    if (!user && email) {
-      user = await User.findOne({ email });
+    if (!user && normalizedEmail) {
+      user = await User.findOne({ email: normalizedEmail });
       if (user) {
         user.githubId = githubId;
         user.avatar = profile.avatar_url;
@@ -77,38 +80,28 @@ export async function GET(req: NextRequest) {
     if (!user) {
       user = await User.create({
         githubId,
-        email: email ?? undefined,
+        email: normalizedEmail ?? undefined,
         displayName: profile.name ?? profile.login,
         avatar: profile.avatar_url,
+        emailVerified: true,
+        emailVerifiedAt: new Date(),
       });
     } else {
       user.avatar = profile.avatar_url;
       user.displayName = profile.name ?? profile.login;
-      if (email && !user.email) user.email = email;
+      if (normalizedEmail) user.email = normalizedEmail;
       await user.save();
     }
 
-    const jwt = generateAccessToken({
-      id: user._id.toString(),
-      email: user.email ?? null,
-      displayName: user.displayName,
+    const { token } = await createSession({
+      userId: user._id.toString(),
+      userAgent: req.headers.get("user-agent") ?? undefined,
+      ip: getClientIp(req),
+      status: "active",
     });
 
     const response = NextResponse.redirect(`${NEXT_PUBLIC_APP_URL}/dashboard`);
-    response.cookies.set("access_token", jwt, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: "/",
-    });
-    response.cookies.set("logged_in", "true", {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: "/",
-    });
+    setAuthCookies(response, token);
 
     return response;
   } catch (err) {

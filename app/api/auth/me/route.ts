@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/db";
 import { getAuthUser } from "@/lib/auth";
 import User from "@/models/User";
 import { syncUserSubscription } from "@/lib/paystack";
+import { isTwoFactorEnabled } from "@/lib/auth/twoFactor";
 
 export async function GET(req: NextRequest) {
   try {
@@ -26,6 +27,9 @@ export async function GET(req: NextRequest) {
         email: user.email,
         displayName: user.displayName,
         avatar: user.avatar,
+        emailVerified: user.emailVerified,
+        hasPassword: Boolean(user.passwordHash),
+        twoFactorEnabled: isTwoFactorEnabled(user),
         plan: user.plan,
         subscriptionStatus: user.subscriptionStatus,
         lastPaymentAt: user.lastPaymentAt,

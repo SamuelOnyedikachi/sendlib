@@ -1,20 +1,20 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { clearAuthCookies } from "@/lib/auth";
+import { revokeSession } from "@/lib/auth/sessions";
 
-export async function POST() {
+export async function POST(req: NextRequest) {
+  const token = req.cookies.get("access_token")?.value;
+  if (token) {
+    try {
+      await revokeSession(token);
+    } catch (err) {
+      console.error("Logout revoke error:", err);
+    }
+  }
   const response = NextResponse.json({ success: true, message: "Logged out" });
-  response.cookies.set("access_token", "", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 0,
-    path: "/",
-  });
-  response.cookies.set("logged_in", "", {
-    httpOnly: false,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 0,
-    path: "/",
-  });
-  return response;
+  return clearAuthCookies(response);
+}
+
+export async function GET(req: NextRequest) {
+  return POST(req);
 }

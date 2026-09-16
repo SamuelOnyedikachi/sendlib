@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "@/lib/axios";
 import { connectDB } from "@/lib/db";
-import { generateAccessToken } from "@/lib/auth";
+import { setAuthCookies, getClientIp } from "@/lib/auth";
+import { createSession } from "@/lib/auth/sessions";
+import { normalizeEmail } from "@/lib/auth/utils";
 import User from "@/models/User";
 
 const { NEXT_PUBLIC_APP_URL } = process.env;
@@ -44,9 +46,11 @@ export async function GET(req: NextRequest) {
 
     await connectDB();
 
+    const normalizedEmail = email ? normalizeEmail(email) : undefined;
+
     let user = await User.findOne({ googleId: id });
-    if (!user && email) {
-      user = await User.findOne({ email });
+    if (!user && normalizedEmail) {
+      user = await User.findOne({ email: normalizedEmail });
       if (user) {
         user.googleId = id;
         user.avatar = picture ?? user.avatar;
@@ -58,39 +62,29 @@ export async function GET(req: NextRequest) {
     if (!user) {
       user = await User.create({
         googleId: id,
-        email: email ?? undefined,
-        displayName: name ?? email ?? "User",
+        email: normalizedEmail ?? undefined,
+        displayName: name ?? normalizedEmail ?? "User",
         avatar: picture ?? undefined,
+        emailVerified: true,
+        emailVerifiedAt: new Date(),
       });
     } else {
       user.avatar = picture ?? user.avatar;
       user.displayName = name ?? user.displayName;
-      if (email && !user.email) user.email = email;
+      if (normalizedEmail && !user.email) user.email = normalizedEmail;
+      if (normalizedEmail) user.email = normalizedEmail;
       await user.save();
     }
 
-    const jwt = generateAccessToken({
-      id: user._id.toString(),
-      email: user.email ?? null,
-      displayName: user.displayName,
+    const { token } = await createSession({
+      userId: user._id.toString(),
+      userAgent: req.headers.get("user-agent") ?? undefined,
+      ip: getClientIp(req),
+      status: "active",
     });
 
     const response = NextResponse.redirect(`${NEXT_PUBLIC_APP_URL}/dashboard`);
-    response.cookies.set("access_token", jwt, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
-      path: "/",
-    });
-    response.cookies.set("logged_in", "true", {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
-      path: "/",
-    });
-
+    setAuthCookies(response, token);
     return response;
   } catch (err) {
     console.error("Google OAuth callback error:", err);
