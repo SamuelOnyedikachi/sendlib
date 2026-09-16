@@ -6,7 +6,8 @@ import { createSession } from "@/lib/auth/sessions";
 import { normalizeEmail } from "@/lib/auth/utils";
 import User from "@/models/User";
 
-const { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, NEXT_PUBLIC_APP_URL } = process.env;
+const { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, NEXT_PUBLIC_APP_URL } =
+  process.env;
 
 interface GithubProfile {
   id: number;
@@ -29,20 +30,31 @@ export async function GET(req: NextRequest) {
   const oauthStateCookie = req.cookies.get("oauth_state")?.value;
 
   if (!code || !stateParam || stateParam !== oauthStateCookie) {
-    return NextResponse.redirect(`${NEXT_PUBLIC_APP_URL}/login?error=invalid_state_or_code`);
+    return NextResponse.redirect(
+      `${NEXT_PUBLIC_APP_URL}/login?error=invalid_state_or_code`,
+    );
   }
 
   try {
     // Exchange code for access token
-    const tokenRes = await axios.post<{ access_token?: string; error?: string }>(
+    const tokenRes = await axios.post<{
+      access_token?: string;
+      error?: string;
+    }>(
       "https://github.com/login/oauth/access_token",
-      { client_id: GITHUB_CLIENT_ID, client_secret: GITHUB_CLIENT_SECRET, code },
-      { headers: { Accept: "application/json" } }
+      {
+        client_id: GITHUB_CLIENT_ID,
+        client_secret: GITHUB_CLIENT_SECRET,
+        code,
+      },
+      { headers: { Accept: "application/json" } },
     );
 
     const { access_token, error } = tokenRes.data;
     if (error || !access_token) {
-      return NextResponse.redirect(`${NEXT_PUBLIC_APP_URL}/login?error=github_token`);
+      return NextResponse.redirect(
+        `${NEXT_PUBLIC_APP_URL}/login?error=github_token`,
+      );
     }
 
     // Fetch GitHub profile
@@ -100,6 +112,8 @@ export async function GET(req: NextRequest) {
     return response;
   } catch (err) {
     console.error("GitHub OAuth callback error:", err);
-    return NextResponse.redirect(`${NEXT_PUBLIC_APP_URL}/login?error=github_callback`);
+    return NextResponse.redirect(
+      `${NEXT_PUBLIC_APP_URL}/login?error=github_callback`,
+    );
   }
 }
