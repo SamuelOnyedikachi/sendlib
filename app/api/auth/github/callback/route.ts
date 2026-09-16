@@ -49,17 +49,11 @@ export async function GET(req: NextRequest) {
     const profileRes = await axios.get<GithubProfile>("https://api.github.com/user", {
       headers: { Authorization: `Bearer ${access_token}` },
     });
-    const profile = profileRes.data;
-
-    // Fetch primary email if not in profile
-    let email = profile.email;
-    if (!email) {
-      const emailRes = await axios.get<GithubEmail[]>("https://api.github.com/user/emails", {
-        headers: { Authorization: `Bearer ${access_token}` },
-      });
-      const primary = emailRes.data.find((e) => e.primary && e.verified);
-      email = primary?.email ?? null;
-    }
+    const profile = profileRes.data;    // Fetch verified primary email for account linking and verification
+    const emailRes = await axios.get<GithubEmail[]>("https://api.github.com/user/emails", {
+      headers: { Authorization: `****** },
+    });
+    const email = emailRes.data.find((e) => e.primary && e.verified)?.email ?? null;
 
     await connectDB();
 
@@ -83,8 +77,8 @@ export async function GET(req: NextRequest) {
         email: normalizedEmail ?? undefined,
         displayName: profile.name ?? profile.login,
         avatar: profile.avatar_url,
-        emailVerified: true,
-        emailVerifiedAt: new Date(),
+        emailVerified: Boolean(normalizedEmail),
+        emailVerifiedAt: normalizedEmail ? new Date() : undefined,
       });
     } else {
       user.avatar = profile.avatar_url;
