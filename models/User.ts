@@ -73,7 +73,7 @@ const UserSchema = new Schema<IUser>(
   {
     githubId: { type: String, sparse: true, index: true },
     googleId: { type: String, sparse: true, index: true },
-    email: { type: String, sparse: true, index: true },
+    email: { type: String },
     displayName: { type: String, required: true },
     avatar: { type: String },
     passwordHash: { type: String },

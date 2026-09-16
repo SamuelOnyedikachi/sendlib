@@ -99,7 +99,9 @@ export function useSignup() {
       return res;
     },
     onSuccess: (res) => {
-      queryClient.setQueryData(["me"], res.data);
+      if (res.data && typeof res.data === "object" && "id" in res.data) {
+        queryClient.setQueryData(["me"], res.data);
+      }
     },
   });
 }

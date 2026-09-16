@@ -4,7 +4,7 @@ import { AuthErrors } from "./errors";
 import {
   hashPassword, verifyPassword, DUMMY_PASSWORD_HASH, validateEmail, validatePassword,
 } from "./passwords";
-import { normalizeEmail, displayNameFromEmail, hashToken, isMongoDuplicateKey } from "./utils";
+import { normalizeEmail, displayNameFromEmail, hashToken } from "./utils";
 import {
   createSession, activateSession, incrementTwoFactorFailure, revokeAllSessionsForUser,
   findSessionByToken, revokeSession, MAX_TWO_FACTOR_ATTEMPTS, PENDING_SESSION_TTL_MS,
@@ -531,5 +531,4 @@ export async function disableTwoFactor(input: DisableTwoFactorInput): Promise<Pu
   }).catch((err) => console.error("2FA disabled notification email failed:", err));
 
   return toPublicUser(user);
-}
 }

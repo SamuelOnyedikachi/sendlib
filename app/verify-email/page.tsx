@@ -147,6 +147,7 @@ function VerifyEmailContent() {
       </div>
     </AuthShell>
   );
+}
 
 export default function VerifyEmailPage() {
   return (

@@ -15,7 +15,8 @@ import { Input } from "@/components/ui/input";
 const OAUTH_ERRORS: Record<string, string> = {
   invalid_state_or_code: "The sign-in link expired. Please try again.",
   google_callback: "Google sign-in failed. Please try again.",
-  google_profile: "Google did not return a profile. Please try again or use the email form.",
+  google_profile:
+    "Google did not return a profile. Please try again or use the email form.",
   github_token: "GitHub sign-in failed. Please try again.",
   github_callback: "GitHub sign-in failed. Please try again.",
 };
@@ -24,7 +25,9 @@ function getOAuthError(): { message: string } | null {
   if (typeof window === "undefined") return null;
   const error = new URLSearchParams(window.location.search).get("error");
   if (!error) return null;
-  return { message: OAUTH_ERRORS[error] ?? "Authentication failed. Please try again." };
+  return {
+    message: OAUTH_ERRORS[error] ?? "Authentication failed. Please try again.",
+  };
 }
 
 export default function LoginPage() {
@@ -55,7 +58,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!isLoading && user) {
-      router.push(nextPath && nextPath.startsWith("/dashboard") ? nextPath : "/dashboard");
+      router.push(
+        nextPath && nextPath.startsWith("/dashboard") ? nextPath : "/dashboard",
+      );
     }
   }, [isLoading, user, router, nextPath]);
 
@@ -84,12 +89,22 @@ export default function LoginPage() {
             return;
           }
           toast.success("Logged in successfully.");
-          router.push(nextPath && nextPath.startsWith("/dashboard") ? nextPath : "/dashboard");
+          router.push(
+            nextPath && nextPath.startsWith("/dashboard")
+              ? nextPath
+              : "/dashboard",
+          );
         },
         onError: (err: unknown) => {
-          setFieldError(err instanceof Error ? err.message : "Login failed. Please try again.");
+          setFieldError(
+            err instanceof Error
+              ? err.message
+              : typeof err === "string"
+                ? err
+                : "Login failed. Please try again.",
+          );
         },
-      }
+      },
     );
   };
 
@@ -101,13 +116,21 @@ export default function LoginPage() {
       {
         onSuccess: () => {
           toast.success("Two-factor verified. Logged in.");
-          router.push(nextPath && nextPath.startsWith("/dashboard") ? nextPath : "/dashboard");
+          router.push(
+            nextPath && nextPath.startsWith("/dashboard")
+              ? nextPath
+              : "/dashboard",
+          );
         },
         onError: (err: unknown) => {
-          setFieldError(err instanceof Error ? err.message : "Invalid code. Please try again.");
+          setFieldError(
+            err instanceof Error
+              ? err.message
+              : "Invalid code. Please try again.",
+          );
           setCode("");
         },
-      }
+      },
     );
   };
 
@@ -132,17 +155,29 @@ export default function LoginPage() {
         className="w-full font-label-sm text-label-sm border border-outline-variant text-on-surface bg-surface h-12 flex items-center justify-center gap-md rounded-xl transition-transform active:scale-95 hover:bg-surface-container-low cursor-pointer"
       >
         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          <path
+            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+            fill="#4285F4"
+          />
+          <path
+            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+            fill="#34A853"
+          />
+          <path
+            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+            fill="#FBBC05"
+          />
+          <path
+            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+            fill="#EA4335"
+          />
         </svg>
         Continue with Google
       </button>
     </div>
   );
 
-return (
+  return (
     <AuthShell
       title="Welcome to Sendlib"
       subtitle="Log in or create an account to manage your API keys and start sending emails in seconds."
@@ -152,7 +187,9 @@ return (
 
         <div className="flex items-center gap-3">
           <div className="h-px flex-1 bg-outline-variant" />
-          <span className="font-label-xs text-label-xs text-on-surface-variant">or</span>
+          <span className="font-label-xs text-label-xs text-on-surface-variant">
+            or
+          </span>
           <div className="h-px flex-1 bg-outline-variant" />
         </div>
 
@@ -194,7 +231,10 @@ return (
             </div>
 
             {fieldError && (
-              <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2" role="alert">
+              <p
+                className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2"
+                role="alert"
+              >
                 {fieldError}
               </p>
             )}
@@ -210,7 +250,8 @@ return (
         ) : (
           <form onSubmit={handleTwoFactor} className="space-y-md" noValidate>
             <p className="font-body-md text-body-md text-on-surface-variant">
-              Enter the 6-digit code from your authenticator app to finish signing in.
+              Enter the 6-digit code from your authenticator app to finish
+              signing in.
             </p>
             <FormField label="Authenticator code" htmlFor="login-2fa-code">
               <Input
@@ -227,7 +268,10 @@ return (
             </FormField>
 
             {fieldError && (
-              <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2" role="alert">
+              <p
+                className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2"
+                role="alert"
+              >
                 {fieldError}
               </p>
             )}
@@ -256,7 +300,10 @@ return (
 
         <p className="font-label-sm text-label-sm text-center text-on-surface-variant">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-primary-sendlib underline underline-offset-4">
+          <Link
+            href="/signup"
+            className="text-primary-sendlib underline underline-offset-4"
+          >
             Create one
           </Link>
         </p>

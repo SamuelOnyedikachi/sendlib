@@ -64,16 +64,26 @@ export default function SignupPage() {
         onSuccess: (res) => {
           toast.success("Account created. Welcome to Sendlib!");
           if (res.verificationPending && !res.verificationEmailSent) {
-            toast.info("We couldn't send the verification email yet — resend it from Security.");
+            toast.info(
+              "We couldn't send the verification email yet — resend it from Security.",
+            );
           } else if (res.verificationPending) {
-            toast.info("We sent a verification email. Check your inbox to confirm your address.");
+            toast.info(
+              "We sent a verification email. Check your inbox to confirm your address.",
+            );
           }
           router.push("/dashboard");
         },
         onError: (err: unknown) => {
-          setFieldError(err instanceof Error ? err.message : "Sign up failed. Please try again.");
+          setFieldError(
+            err instanceof Error
+              ? err.message
+              : typeof err === "string"
+                ? err
+                : "Login failed. Please try again.",
+          );
         },
-      }
+      },
     );
   };
 
@@ -119,7 +129,10 @@ export default function SignupPage() {
 
         <ul className="space-y-1">
           {PASSWORD_HINTS.map((hint) => (
-            <li key={hint} className="flex items-center gap-2 text-xs text-secondary">
+            <li
+              key={hint}
+              className="flex items-center gap-2 text-xs text-secondary"
+            >
               <span className="h-1 w-1 rounded-full bg-primary-sendlib inline-block" />
               {hint}
             </li>
@@ -127,7 +140,10 @@ export default function SignupPage() {
         </ul>
 
         {fieldError && (
-          <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2" role="alert">
+          <p
+            className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2"
+            role="alert"
+          >
             {fieldError}
           </p>
         )}
@@ -143,11 +159,17 @@ export default function SignupPage() {
 
       <p className="font-label-xs text-label-xs text-center text-on-surface-variant max-w-85 mx-auto leading-relaxed">
         By creating an account, you agree to our{" "}
-        <Link href="/terms-of-service" className="underline hover:text-primary-sendlib">
+        <Link
+          href="/terms-of-service"
+          className="underline hover:text-primary-sendlib"
+        >
           Terms of Service
         </Link>{" "}
         and{" "}
-        <Link href="/privacy-policy" className="underline hover:text-primary-sendlib">
+        <Link
+          href="/privacy-policy"
+          className="underline hover:text-primary-sendlib"
+        >
           Privacy Policy
         </Link>
         .
@@ -155,7 +177,10 @@ export default function SignupPage() {
 
       <p className="font-label-sm text-label-sm text-center text-on-surface-variant">
         Already have an account?{" "}
-        <Link href="/login" className="text-primary-sendlib underline underline-offset-4">
+        <Link
+          href="/login"
+          className="text-primary-sendlib underline underline-offset-4"
+        >
           Log in
         </Link>
       </p>

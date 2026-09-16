@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { setAuthCookies } from "@/lib/auth";
+import { setAuthCookies, setPendingAuthCookies } from "@/lib/auth";
 import { rateLimit } from "@/lib/rateLimit";
 import { login } from "@/lib/auth/service";
 import { getDeviceInfo, authErrorResponse, parseJsonBody } from "@/lib/auth/handlers";
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
         requiresTwoFactor: true,
         data: null,
       });
-      setAuthCookies(response, result.sessionToken!);
+      setPendingAuthCookies(response, result.sessionToken!);
       return response;
     }
 

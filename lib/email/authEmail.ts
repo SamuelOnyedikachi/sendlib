@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 import type Mail from "nodemailer/lib/mailer";
-import type { SMTPTransport } from "nodemailer/lib/smtp-transport";
+import SMTPTransport from "nodemailer/lib/smtp-transport";
 
 /**
  * Transactional email transport for authentication flows.
@@ -57,8 +57,6 @@ function createTransport(): { transporter: nodemailer.Transporter; isJson: boole
       port: Number(port),
       secure: (process.env.SMTP_SECURE ?? "true") === "true",
       auth: { user, pass },
-      rateDelta: 1000,
-      rateLimit: 5,
       connectionTimeout: 15000,
       greetingTimeout: 15000,
       socketTimeout: 20000,
