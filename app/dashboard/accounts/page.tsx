@@ -4,7 +4,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { MailIcon, CheckmarkCircle01Icon, CancelCircleIcon } from '@hugeicons/core-free-icons';
 import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -33,8 +33,6 @@ function AccountsContent() {
   const [agreeTerms, setAgreeTerms] = useState(false);
 
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
   const handledRef = useRef(false);
 
   useEffect(() => {
@@ -42,25 +40,42 @@ function AccountsContent() {
 
     if (searchParams.get("gmail_connected") === "true") {
       handledRef.current = true;
-      confetti({
-        particleCount: 300,
-        spread: 120,
-        origin: { y: 0.6 }
-      });
-      setTimeout(() => setSuccessDialogOpen(true), 0);
-      toast.success("Gmail account connected successfully!");
-      router.replace(pathname, { scroll: false });
-    } else if (searchParams.get("gmail_updated") === "true") {
+      // Store the signal then hard-redirect to clean URL so the param is truly gone
+      sessionStorage.setItem("gmail_just_connected", "1");
+      window.location.replace(window.location.pathname);
+      return;
+    }
+
+    if (searchParams.get("gmail_updated") === "true") {
       handledRef.current = true;
       const email = searchParams.get("email");
+      sessionStorage.setItem("gmail_just_updated", email ?? "1");
+      window.location.replace(window.location.pathname);
+      return;
+    }
+
+    // After the hard redirect, pick up the signal from sessionStorage
+    const justConnected = sessionStorage.getItem("gmail_just_connected");
+    if (justConnected) {
+      sessionStorage.removeItem("gmail_just_connected");
+      confetti({ particleCount: 300, spread: 120, origin: { y: 0.6 } });
+      setTimeout(() => setSuccessDialogOpen(true), 0);
+      toast.success("Gmail account connected successfully!");
+      return;
+    }
+
+    const justUpdated = sessionStorage.getItem("gmail_just_updated");
+    if (justUpdated) {
+      sessionStorage.removeItem("gmail_just_updated");
+      const email = justUpdated === "1" ? null : justUpdated;
       toast.success(
         email
           ? `Gmail account (${email}) re-authenticated & tokens updated!`
           : "Gmail account re-authenticated & tokens updated!"
       );
-      router.replace(pathname, { scroll: false });
     }
-  }, [searchParams, router, pathname]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const isPro = user?.plan === "pro";
   const maxAccounts = isPro ? 50 : 3;
@@ -200,7 +215,7 @@ function AccountsContent() {
       )}
 
       {/* Gmail Connected Celebration Dialog */}
-      <Dialog open={successDialogOpen} onOpenChange={(open) => { if (!open) window.location.reload(); }}>
+      <Dialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader className="mb-2">
             <DialogTitle className="text-xl font-headline-md font-bold text-primary-sendlib flex items-center gap-2">
@@ -214,7 +229,7 @@ function AccountsContent() {
             <Button 
               variant="outline" 
               className="flex-1 rounded-lg font-label-sm border border-outline-variant hover:bg-surface-container-low text-on-background cursor-pointer" 
-              onClick={() => window.location.reload()}
+              onClick={() => setSuccessDialogOpen(false)}
             >
               Dismiss
             </Button>
