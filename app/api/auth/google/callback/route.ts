@@ -8,6 +8,14 @@ import User from "@/models/User";
 
 const { NEXT_PUBLIC_APP_URL } = process.env;
 
+interface GoogleUserInfo {
+  id?: string;
+  email?: string;
+  name?: string;
+  picture?: string;
+  verified_email?: boolean;
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
@@ -35,10 +43,10 @@ export async function GET(req: NextRequest) {
     );
     const tokens = tokenRes.data;
 
-    const userInfoRes = await axios.get("https://www.googleapis.com/oauth2/v2/userinfo", {
+    const userInfoRes = await axios.get<GoogleUserInfo>("https://www.googleapis.com/oauth2/v2/userinfo", {
       headers: { Authorization: `Bearer ${tokens.access_token}` },
     });
-    const { id, email, name, picture } = userInfoRes.data;
+    const { id, email, name, picture, verified_email } = userInfoRes.data;
 
     if (!id) {
       return NextResponse.redirect(`${NEXT_PUBLIC_APP_URL}/login?error=google_profile`);
@@ -46,7 +54,8 @@ export async function GET(req: NextRequest) {
 
     await connectDB();
 
-    const normalizedEmail = email ? normalizeEmail(email) : undefined;
+    const hasVerifiedEmail = Boolean(email && verified_email);
+    const normalizedEmail = hasVerifiedEmail ? normalizeEmail(email) : undefined;
 
     let user = await User.findOne({ googleId: id });
     if (!user && normalizedEmail) {
@@ -65,8 +74,8 @@ export async function GET(req: NextRequest) {
         email: normalizedEmail ?? undefined,
         displayName: name ?? normalizedEmail ?? "User",
         avatar: picture ?? undefined,
-        emailVerified: true,
-        emailVerifiedAt: new Date(),
+        emailVerified: hasVerifiedEmail,
+        emailVerifiedAt: hasVerifiedEmail ? new Date() : undefined,
       });
     } else {
       user.avatar = picture ?? user.avatar;
