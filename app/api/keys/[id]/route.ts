@@ -58,10 +58,59 @@ export async function PATCH(
       return NextResponse.json({ success: false, message: "API key not found" }, { status: 404 });
     }
 
-    key.revoked = true;
+    let body: { revoked?: boolean; name?: string; allowedOrigins?: string[] } = {};
+    try {
+      body = await req.json();
+    } catch {
+      body = {};
+    }
+
+    // Handle revocation if explicitly requested or if no other update fields are present
+    if (body.revoked === true || (body.name === undefined && body.allowedOrigins === undefined)) {
+      key.revoked = true;
+      await key.save();
+      return NextResponse.json({ success: true, message: "API key revoked" });
+    }
+
+    if (key.revoked) {
+      return NextResponse.json({ success: false, message: "Cannot edit a revoked API key" }, { status: 400 });
+    }
+
+    if (body.name !== undefined) {
+      const rawName = String(body.name).trim();
+      key.name = rawName.length > 0 ? rawName.slice(0, 25) : "My API Key";
+    }
+
+    if (body.allowedOrigins !== undefined) {
+      const rawAllowedOrigins = Array.isArray(body.allowedOrigins) ? body.allowedOrigins : [];
+      const allowedOrigins = rawAllowedOrigins
+        .map((o: unknown) =>
+          String(o)
+            .trim()
+            .toLowerCase()
+            .replace(/^(https?:\/\/)/, "")
+            .split("/")[0]
+        )
+        .filter((o: string) => o.length > 0 && o.length <= 253);
+
+      key.allowedOrigins = [...new Set(allowedOrigins)];
+    }
+
     await key.save();
 
-    return NextResponse.json({ success: true, message: "API key revoked" });
+    return NextResponse.json({
+      success: true,
+      message: "API key updated successfully",
+      data: {
+        id: key._id.toString(),
+        name: key.name,
+        keyPrefix: key.keyPrefix,
+        revoked: key.revoked,
+        allowedOrigins: key.allowedOrigins,
+        lastUsedAt: key.lastUsedAt,
+        createdAt: key.createdAt,
+      },
+    });
   } catch (err) {
     if (err instanceof Response) return err;
     console.error("/api/keys/[id] PATCH error:", err);

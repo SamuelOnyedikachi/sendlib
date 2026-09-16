@@ -1,10 +1,10 @@
 "use client";
 
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Key01Icon, Copy01Icon, CheckmarkCircle01Icon, CancelCircleIcon, Delete01Icon } from '@hugeicons/core-free-icons';
+import { Key01Icon, Copy01Icon, CheckmarkCircle01Icon, CancelCircleIcon, Delete01Icon, PencilEdit01Icon } from '@hugeicons/core-free-icons';
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useApiKeys, useGenerateApiKey, useDeleteApiKey } from "@/hooks/useApiKeys";
+import { useApiKeys, useGenerateApiKey, useDeleteApiKey, useUpdateApiKey, type ApiKey } from "@/hooks/useApiKeys";
 import { useMe } from "@/hooks/useAuth";
 import { useState, useEffect, Suspense } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -23,11 +23,15 @@ function KeysContent() {
   const { data: gmailAccounts, isLoading: isLoadingAccounts } = useGmailAccounts();
   const { mutate: generateKey, isPending: isGenerating } = useGenerateApiKey();
   const { mutate: deleteKey, isPending: isDeleting } = useDeleteApiKey();
+  const { mutate: updateKey, isPending: isUpdating } = useUpdateApiKey();
   const [newKeyDialog, setNewKeyDialog] = useState<{ key: string; hint: string } | null>(null);
   const [generateDialog, setGenerateDialog] = useState(false);
   const [keyLabel, setKeyLabel] = useState("");
   const [allowedOriginsText, setAllowedOriginsText] = useState("");
   const [deleteKeyId, setDeleteKeyId] = useState<string | null>(null);
+  const [editingKey, setEditingKey] = useState<ApiKey | null>(null);
+  const [editKeyLabel, setEditKeyLabel] = useState("");
+  const [editAllowedOriginsText, setEditAllowedOriginsText] = useState("");
 
   const connectedAccounts = gmailAccounts?.filter((a) => a.connected) || [];
   const hasConnectedAccounts = connectedAccounts.length > 0;
@@ -92,6 +96,38 @@ function KeysContent() {
         toast.error(msg);
       }
     });
+  };
+
+  const handleOpenEdit = (key: ApiKey) => {
+    setEditingKey(key);
+    setEditKeyLabel(key.name || "");
+    setEditAllowedOriginsText(key.allowedOrigins && key.allowedOrigins.length > 0 ? key.allowedOrigins.join("\n") : "");
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingKey) return;
+    const allowedOrigins = editAllowedOriginsText
+      .split(/[\n,]/)
+      .map(o => o.trim())
+      .filter(o => o.length > 0);
+
+    updateKey(
+      {
+        id: editingKey.id,
+        name: editKeyLabel.trim() || undefined,
+        allowedOrigins,
+      },
+      {
+        onSuccess: () => {
+          toast.success("API key updated successfully");
+          setEditingKey(null);
+        },
+        onError: (err: unknown) => {
+          const msg = typeof err === "string" ? err : (err as Error)?.message || "Failed to update API key.";
+          toast.error(msg);
+        }
+      }
+    );
   };
 
   return (
@@ -205,17 +241,30 @@ function KeysContent() {
                         </code>
                       </td>
                       <td className="px-6 py-4">
-                        {key.allowedOrigins && key.allowedOrigins.length > 0 ? (
-                          <div className="flex flex-wrap gap-1.5 max-w-[280px]">
-                            {key.allowedOrigins.map((origin) => (
-                              <code key={origin} className="px-2 py-0.5 rounded bg-surface-container-low font-mono text-[10px] text-secondary border border-outline-variant/40">
-                                {origin}
-                              </code>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="text-xs text-secondary italic">Any origin allowed</span>
-                        )}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {key.allowedOrigins && key.allowedOrigins.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5 max-w-[280px]">
+                              {key.allowedOrigins.map((origin) => (
+                                <code key={origin} className="px-2 py-0.5 rounded bg-surface-container-low font-mono text-[10px] text-secondary border border-outline-variant/40">
+                                  {origin}
+                                </code>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-secondary italic">Any origin allowed</span>
+                          )}
+                          {!key.revoked && (
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEdit(key)}
+                              className="text-[11px] text-primary-sendlib/70 hover:text-primary-sendlib hover:underline cursor-pointer inline-flex items-center gap-1 font-medium"
+                              title="Edit allowed origins"
+                            >
+                              <HugeiconsIcon icon={PencilEdit01Icon} size={11} color="currentColor" strokeWidth={1.5} />
+                              Edit
+                            </button>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {!key.revoked ? (
@@ -233,15 +282,27 @@ function KeysContent() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right pr-6">
                         {!key.revoked && (
-                          <Button
-                            variant="ghost"
-                            size="icon-xs"
-                            className="h-7 w-7 text-destructive hover:bg-destructive/10 rounded-md cursor-pointer"
-                            onClick={() => setDeleteKeyId(key.id)}
-                            disabled={isDeleting && deleteKeyId === key.id}
-                          >
-                            <HugeiconsIcon icon={Delete01Icon} size={14} color='currentColor' strokeWidth={1.5} />
-                          </Button>
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              className="h-7 w-7 text-secondary hover:text-primary-sendlib hover:bg-surface-container-high rounded-md cursor-pointer"
+                              onClick={() => handleOpenEdit(key)}
+                              title="Edit key & allowed origins"
+                            >
+                              <HugeiconsIcon icon={PencilEdit01Icon} size={14} color='currentColor' strokeWidth={1.5} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              className="h-7 w-7 text-destructive hover:bg-destructive/10 rounded-md cursor-pointer"
+                              onClick={() => setDeleteKeyId(key.id)}
+                              disabled={isDeleting && deleteKeyId === key.id}
+                              title="Delete API key"
+                            >
+                              <HugeiconsIcon icon={Delete01Icon} size={14} color='currentColor' strokeWidth={1.5} />
+                            </Button>
+                          </div>
                         )}
                       </td>
                     </tr>
@@ -407,6 +468,69 @@ function KeysContent() {
               disabled={isDeleting}
             >
               {isDeleting ? "Deleting..." : "Delete Key"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit API Key & Allowed Origins Dialog */}
+      <Dialog open={!!editingKey} onOpenChange={(open) => !open && setEditingKey(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="mb-0">
+            <DialogTitle className="text-xl font-headline-md font-bold text-primary-sendlib">Edit Allowed Origins</DialogTitle>
+            <DialogDescription className="text-secondary text-sm mt-1">
+              Update the allowed origins or label for this API key without regenerating your secret key.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-label-sm font-semibold text-on-background mb-1.5 block">
+                Key Label
+              </label>
+              <Input
+                placeholder="e.g. Production Backend"
+                value={editKeyLabel}
+                onChange={(e) => setEditKeyLabel(e.target.value)}
+                className="h-9 rounded-lg border border-outline-variant bg-surface-container-low px-3 text-sm text-on-background placeholder:text-secondary/70 focus-visible:border-primary-sendlib"
+              />
+              <div className="flex justify-between mt-1 text-[11px]">
+                <span className={editKeyLabel.length > 25 ? "text-destructive font-bold" : "text-secondary font-medium"}>
+                  {editKeyLabel.length}/25 characters
+                </span>
+                {editKeyLabel.length > 25 && (
+                  <span className="text-destructive font-bold">Exceeds limit</span>
+                )}
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-label-sm font-semibold text-on-background mb-1.5 block">
+                Allowed Origins / Domains (Optional)
+              </label>
+              <textarea
+                placeholder="e.g.&#10;localhost:3000&#10;myapp.com"
+                value={editAllowedOriginsText}
+                onChange={(e) => setEditAllowedOriginsText(e.target.value)}
+                className="w-full rounded-lg border border-outline-variant bg-surface-container-low p-2.5 text-sm text-on-background placeholder:text-secondary/70 focus-visible:border-primary-sendlib outline-none min-h-[90px] font-mono placeholder:font-sans leading-relaxed resize-none"
+              />
+              <p className="text-[11px] text-secondary mt-1.5 leading-relaxed">
+                Enter one origin per line or comma-separated. Leave empty to allow any origin to make requests with this key.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-row gap-3 pt-2">
+            <Button
+              variant="outline"
+              className="flex-1 rounded-lg font-label-sm border border-outline-variant hover:bg-surface-container-low text-on-background"
+              onClick={() => setEditingKey(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="flex-1 rounded-lg font-label-sm bg-emerald-500 hover:bg-emerald-600 text-black border-0 font-bold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              onClick={handleSaveEdit}
+              disabled={isUpdating || editKeyLabel.length > 25}
+            >
+              {isUpdating ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </DialogContent>

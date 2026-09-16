@@ -53,10 +53,27 @@ export function useRevokeApiKey() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      await api.patch(`/keys/${id}`);
+      await api.patch(`/keys/${id}`, { revoked: true });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["api-keys"] });
     },
   });
 }
+
+export function useUpdateApiKey() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, allowedOrigins, name }: { id: string; allowedOrigins?: string[]; name?: string }) => {
+      const res = await api.patch<
+        never,
+        { success: boolean; message: string; data: ApiKey }
+      >(`/keys/${id}`, { allowedOrigins, name });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["api-keys"] });
+    },
+  });
+}
+
