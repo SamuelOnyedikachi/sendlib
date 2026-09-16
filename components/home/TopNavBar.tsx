@@ -24,12 +24,10 @@ export default function TopNavBar() {
   return (
     <header 
       className={`w-full fixed top-0 z-50 transition-all duration-300 ${
-        isScrolled ? "shadow-sm" : ""
+        isScrolled ? "shadow-sm border-b border-outline-variant/30" : ""
       }`}
       style={{ 
-        backgroundColor: isScrolled ? 'rgba(2, 4, 3, 0.75)' : 'transparent', 
-        backdropFilter: isScrolled ? 'blur(16px)' : 'blur(0px)', 
-        WebkitBackdropFilter: isScrolled ? 'blur(16px)' : 'blur(0px)' 
+        backgroundColor: isScrolled ? 'rgba(2, 4, 3, 1)' : 'transparent', 
       }}
     >
       <nav className="flex justify-between items-center px-margin-mobile md:px-margin-desktop py-md max-w-7xl mx-auto">
