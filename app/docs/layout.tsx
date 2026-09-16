@@ -10,7 +10,7 @@ export default function DocsLayout({
   return (
     <div className="min-h-screen bg-background-sendlib text-on-background font-sans selection:bg-primary-sendlib/20 selection:text-primary-sendlib flex flex-col pt-16">
       {/* Top Navbar specifically for Docs */}
-      <nav className="fixed top-0 left-0 right-0 h-16 border-b border-outline-variant bg-surface/80 backdrop-blur-md z-50 flex items-center justify-between px-6">
+      <nav className="fixed top-0 left-0 right-0 h-16 border-b border-outline-variant bg-background-sendlib z-50 flex items-center justify-between px-6">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
              <span className="font-bold text-lg text-white tracking-tight">Sendlib</span>
