@@ -1,0 +1,5 @@
+# Global owner for everything
+* @samueltuoyo15
+
+# Strictly lock down workflow and repo configurations
+/.github/ @samueltuoyo15
