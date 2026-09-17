@@ -169,7 +169,7 @@ export function TwoFactorSection() {
           <div className="space-y-4">
             <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200 leading-relaxed">
               <strong>Save these recovery codes now.</strong> They are the only way into your account
-              if you lose your phone. Store them somewhere safe — they will never be shown again.
+              if you lose your phone. Store them somewhere safe: they will never be shown again.
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {recoveryCodes.map((rc) => (

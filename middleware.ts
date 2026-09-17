@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 /**
  * Page-level guard for the dashboard shell. Full session validation still
- * happens server-side in every API route via requireAuthUser() — this only
+ * happens server-side in every API route via requireAuthUser(), this only
  * prevents unauthenticated users from receiving the dashboard HTML at all.
  * It cannot be fooled into authenticating anyone on its own.
  */

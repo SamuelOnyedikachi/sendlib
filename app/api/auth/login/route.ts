@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (result.needsTwoFactor) {
-      // Pending session only — the user must complete 2FA before a full session.
+      // Pending session only: the user must complete 2FA before a full session.
       const response = NextResponse.json({
         success: true,
         requiresTwoFactor: true,

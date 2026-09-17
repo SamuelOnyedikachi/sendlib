@@ -2,7 +2,7 @@ import { z } from "zod";
 
 /**
  * Client-safe validation schemas (no server-only imports). The same schemas
- * are re-validated server-side in lib/auth/passwords.ts — never trust the
+ * are re-validated server-side in lib/auth/passwords.ts, never trust the
  * client alone.
  */
 export const passwordSchema = z

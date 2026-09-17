@@ -89,8 +89,8 @@ export default function SecurityPage() {
               </h2>
               <p className="text-sm text-secondary mt-1">
                 {isVerified
-                  ? `Verified — ${user.email ?? "your email"}.`
-                  : `Not verified — confirm ${user.email ?? "your email"} to secure your account.`}
+                  ? `Verified: ${user.email ?? "your email"}.`
+                  : `Not verified: confirm ${user.email ?? "your email"} to secure your account.`}
               </p>
             </div>
           </div>

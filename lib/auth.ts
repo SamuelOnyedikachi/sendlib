@@ -107,7 +107,7 @@ export function setAuthCookies(response: NextResponse, token: string): NextRespo
 
 /**
  * Pending 2FA: keep the opaque session token so the 2FA step can upgrade it,
- * but do not set logged_in — middleware must not treat this as authenticated.
+ * but do not set logged_in; middleware must not treat this as authenticated.
  */
 export function setPendingAuthCookies(response: NextResponse, token: string): NextResponse {
   const secure = process.env.NODE_ENV === "production";

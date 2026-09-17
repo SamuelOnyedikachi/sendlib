@@ -23,7 +23,7 @@ export function buildWelcomeEmailHtml(name: string): string {
     bodyHtml:
       row(
         paragraph(
-          `Thanks for signing up. Your account is ready to go — connect a Gmail account and create your first API key to start sending transactional emails.`
+          `Thanks for signing up. Your account is ready to go: connect a Gmail account and create your first API key to start sending transactional emails.`
         )
       ) +
       row(paragraph(`Next steps:`, { strong: true })) +
@@ -48,7 +48,7 @@ export function buildVerifyEmailHtml(name: string, url: string, expiresInLabel: 
     actionUrl: url,
     actionLabel: "Verify Email",
     ignoreNote:
-      "If you didn't create a Sendlib account, please ignore this email — your account will stay unverified unless you confirm it.",
+      "If you didn't create a Sendlib account, please ignore this email; your account will stay unverified unless you confirm it.",
   });
 }
 
@@ -111,7 +111,7 @@ export function buildTwoFactorEnabledEmailHtml(): string {
       row(paragraph(`Hi there,`)) +
       row(
         paragraph(
-          `Two-factor authentication (2FA) was just enabled on your Sendlib account. From now on, every login will require a 6-digit code from your authenticator app. Keep your recovery codes safe — they're the only backup way into your account.`
+          `Two-factor authentication (2FA) was just enabled on your Sendlib account. From now on, every login will require a 6-digit code from your authenticator app. Keep your recovery codes safe: they're the only backup way into your account.`
         )
       ),
     ignoreNote: "If you didn't enable 2FA, sign in immediately and turn it off.",

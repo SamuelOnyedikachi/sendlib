@@ -320,7 +320,7 @@ export interface ForgotPasswordInput extends DeviceInfo {
   email: string;
 }
 
-/** Always returns a generic outcome — never reveals whether an account exists. */
+/** Always returns a generic outcome: never reveals whether an account exists. */
 export async function requestPasswordReset(input: ForgotPasswordInput): Promise<{ emailSent: boolean }> {
   const emailResult = validateEmail(input.email);
   if (!emailResult.ok) return { emailSent: false };
