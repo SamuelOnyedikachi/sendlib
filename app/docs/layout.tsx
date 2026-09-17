@@ -1,6 +1,7 @@
 
 import Link from "next/link";
 import { DocsSidebar } from "@/components/docs/Sidebar";
+import { DocsNavLink } from "@/components/docs/DocsNavLink";
 
 export default function DocsLayout({
   children,
@@ -17,9 +18,7 @@ export default function DocsLayout({
           </Link>
         </div>
         <div className="flex items-center gap-4">
-          <Link href="/dashboard" className="text-[13px] font-bold px-4 py-2 bg-surface hover:bg-surface-container-low rounded-lg text-primary-sendlib transition-colors border border-outline-variant shadow-xs">
-            Back to Dashboard
-          </Link>
+          <DocsNavLink />
         </div>
       </nav>
 

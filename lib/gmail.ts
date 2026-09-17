@@ -12,6 +12,7 @@ import crypto from "crypto";
 import dns from "dns";
 import type { DebugIssue, DebugReport, DebugStep } from "@/lib/emailDebugger";
 import { buildDebugReport } from "@/lib/emailDebugger";
+import { connectToRedis } from "@/lib/redis";
 
 // Fix for Zeabur DNS resolution issue (IPv4 only)
 dns.setDefaultResultOrder("ipv4first");
@@ -242,22 +243,92 @@ export async function sendGmailEmail(
   }
 
   const senderEmail = account.gmailEmail;
-  const startOfToday = new Date();
-  startOfToday.setUTCHours(0, 0, 0, 0);
-  const sentCount = await EmailLog.countDocuments({
-    userId: account.userId,
-    from: senderEmail,
-    status: "sent",
-    createdAt: { $gte: startOfToday }
-  });
-
   const isWorkspace = !senderEmail.endsWith("@gmail.com") && !senderEmail.endsWith("@googlemail.com");
+  // Conservative limits: slightly under Google's published caps to absorb drift
   const limit = isWorkspace
-    ? isPro ? 2000 : 1000
-    : isPro ? 500 : 200;
+    ? isPro ? 2000 : 1800
+    : isPro ? 500 : 450;
 
-  if (sentCount >= limit) {
-    throw new Error(`Daily limit reached: Connected Gmail '${senderEmail}' has already sent ${sentCount} of its ${limit} daily allowed emails today.${!isPro ? " Upgrade to Pro to unlock higher daily sending limits." : ""}`);
+  // Atomic per-Gmail daily cap using Redis INCR.
+  // Key resets naturally via TTL; 25 hours covers timezone drift.
+  const utcDate = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const dailyKey = `daily_cap:${senderEmail}:${utcDate}`;
+  const burstKey = `gmail_burst:${senderEmail}`;
+  // Burst: max 1 send per 2s for free Gmail, 2/s for Workspace
+  const burstMax = isWorkspace ? 2 : 1;
+  const burstWindowMs = 1000;
+
+  let dailyCountAfterIncr = 0;
+  let redisAvailable = false;
+
+  if (process.env.REDIS_URL) {
+    try {
+      const redis = connectToRedis();
+
+      // Lua script: atomically increment daily counter + set TTL on first call
+      const dailyScript = `
+        local c = redis.call("INCR", KEYS[1])
+        if c == 1 then
+          redis.call("EXPIRE", KEYS[1], ARGV[1])
+        end
+        return c
+      `;
+      dailyCountAfterIncr = await redis.eval(dailyScript, 1, dailyKey, 90000) as number;
+
+      // If we just exceeded the limit, decrement so we don't eat from the
+      // counter on a rejected request, then throw.
+      if (dailyCountAfterIncr > limit) {
+        await redis.decr(dailyKey);
+        throw new Error(`Daily limit reached: Connected Gmail '${senderEmail}' has already sent ${limit} of its ${limit} daily allowed emails today.${!isPro ? " Upgrade to Pro to unlock higher daily sending limits." : ""}`);
+      }
+
+      // Burst guard: sliding window, max burstMax per burstWindowMs
+      const burstScript = `
+        local now = tonumber(ARGV[1])
+        local window = tonumber(ARGV[2])
+        local max = tonumber(ARGV[3])
+        redis.call("ZREMRANGEBYSCORE", KEYS[1], 0, now - window)
+        local count = redis.call("ZCARD", KEYS[1])
+        if count >= max then return 0 end
+        redis.call("ZADD", KEYS[1], now, now .. "-" .. math.random(1000000))
+        redis.call("EXPIRE", KEYS[1], 10)
+        return 1
+      `;
+      const burstAllowed = await redis.eval(
+        burstScript, 1, burstKey,
+        Date.now(), burstWindowMs, burstMax
+      ) as number;
+
+      if (burstAllowed === 0) {
+        // Decrement the daily counter we just incremented
+        await redis.decr(dailyKey);
+        throw new Error(`Sending too fast. Please slow down requests to '${senderEmail}' to avoid triggering Gmail spam detection.`);
+      }
+
+      redisAvailable = true;
+    } catch (err) {
+      // Re-throw our own limit/burst errors
+      if (err instanceof Error && (err.message.startsWith("Daily limit") || err.message.startsWith("Sending too fast"))) {
+        throw err;
+      }
+      // Redis infra error -- fall through to MongoDB fallback
+      console.error("Redis daily cap unavailable, falling back to MongoDB:", err instanceof Error ? err.message : err);
+    }
+  }
+
+  // MongoDB fallback (no Redis, or Redis unavailable). Still blocks, just not race-safe.
+  if (!redisAvailable) {
+    const startOfToday = new Date();
+    startOfToday.setUTCHours(0, 0, 0, 0);
+    const sentCount = await EmailLog.countDocuments({
+      userId: account.userId,
+      from: senderEmail,
+      status: "sent",
+      createdAt: { $gte: startOfToday }
+    });
+    if (sentCount >= limit) {
+      throw new Error(`Daily limit reached: Connected Gmail '${senderEmail}' has already sent ${sentCount} of its ${limit} daily allowed emails today.${!isPro ? " Upgrade to Pro to unlock higher daily sending limits." : ""}`);
+    }
   }
 
   const bufferMs = 5 * 60 * 1000;

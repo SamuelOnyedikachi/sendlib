@@ -144,28 +144,28 @@ export default function LoginPage() {
   return (
     <AuthShell
       title="Welcome to Sendlib"
-      subtitle="Log in or create an account to manage your API keys and start sending emails in seconds."
+      subtitle="Log in to manage your API keys and send emails via API."
     >
-      <div className="space-y-md">
-      <SocialButtons />
+      <div className="space-y-3">
+        <SocialButtons />
 
         <div className="flex items-center gap-3">
           <div className="h-px flex-1 bg-outline-variant" />
-          <span className="font-label-xs text-label-xs text-on-surface-variant">
+          <span className="font-label-xs text-[11px] text-on-surface-variant">
             or
           </span>
           <div className="h-px flex-1 bg-outline-variant" />
         </div>
 
         {step === "credentials" ? (
-          <form onSubmit={handleLogin} className="space-y-md" noValidate>
+          <form onSubmit={handleLogin} className="space-y-3" noValidate>
             <FormField label="Email address" htmlFor="login-email">
               <Input
                 id="login-email"
                 type="email"
                 autoComplete="email"
                 required
-                className="h-12 rounded-xl bg-surface px-4"
+                className="h-10 rounded-lg bg-surface px-3 text-sm"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -178,25 +178,25 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="h-12 rounded-xl bg-surface px-4"
+                className="h-10 rounded-lg bg-surface px-3 text-sm"
                 placeholder="Your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </FormField>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-end">
               <Link
                 href="/forgot-password"
-                className="font-label-sm text-label-sm text-secondary hover:text-primary-sendlib underline underline-offset-4"
+                className="text-xs text-secondary hover:text-primary-sendlib underline underline-offset-4"
               >
-                Forgot your password?
+                Forgot password?
               </Link>
             </div>
 
             {fieldError && (
               <p
-                className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2"
+                className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-1.5"
                 role="alert"
               >
                 {fieldError}
@@ -206,16 +206,15 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={login.isPending}
-              className="w-full h-12 rounded-xl font-label-sm text-label-sm bg-primary-sendlib text-black hover:opacity-90"
+              className="w-full h-10 rounded-lg font-label-sm text-sm font-bold bg-primary-sendlib text-black hover:opacity-90 cursor-pointer"
             >
               {login.isPending ? "Logging in..." : "Log in"}
             </Button>
           </form>
         ) : (
-          <form onSubmit={handleTwoFactor} className="space-y-md" noValidate>
-            <p className="font-body-md text-body-md text-on-surface-variant">
-              Enter the 6-digit code from your authenticator app to finish
-              signing in.
+          <form onSubmit={handleTwoFactor} className="space-y-3" noValidate>
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              Enter the 6-digit code from your authenticator app to finish signing in.
             </p>
             <FormField label="Authenticator code" htmlFor="login-2fa-code">
               <Input
@@ -224,7 +223,7 @@ export default function LoginPage() {
                 autoComplete="one-time-code"
                 maxLength={19}
                 required
-                className="h-12 rounded-xl bg-surface px-4 text-center text-lg tracking-[0.4em] font-mono"
+                className="h-10 rounded-lg bg-surface px-3 text-center text-base tracking-[0.3em] font-mono"
                 placeholder="000000 or XXXX-XXXX-XXXX-XXXX"
                 value={code}
                 onChange={(e) =>
@@ -240,7 +239,7 @@ export default function LoginPage() {
 
             {fieldError && (
               <p
-                className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2"
+                className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-1.5"
                 role="alert"
               >
                 {fieldError}
@@ -250,7 +249,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={complete2fa.isPending || !isTwoFactorCodeValid}
-              className="w-full h-12 rounded-xl font-label-sm text-label-sm bg-primary-sendlib text-black hover:opacity-90"
+              className="w-full h-10 rounded-lg font-label-sm text-sm font-bold bg-primary-sendlib text-black hover:opacity-90 cursor-pointer"
             >
               {complete2fa.isPending ? "Verifying..." : "Verify & Log In"}
             </Button>
@@ -262,18 +261,18 @@ export default function LoginPage() {
                 setCode("");
                 setFieldError(null);
               }}
-              className="w-full font-label-sm text-label-sm text-secondary hover:text-primary-sendlib"
+              className="w-full text-xs text-secondary hover:text-primary-sendlib py-1 cursor-pointer"
             >
               &larr; Back to password
             </button>
           </form>
         )}
 
-        <p className="font-label-sm text-label-sm text-center text-on-surface-variant">
+        <p className="text-xs text-center text-on-surface-variant pt-0.5">
           Don&apos;t have an account?{" "}
           <Link
             href="/signup"
-            className="text-primary-sendlib underline underline-offset-4"
+            className="text-primary-sendlib font-semibold underline underline-offset-4"
           >
             Create one
           </Link>
