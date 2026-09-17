@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useMe } from "@/hooks/useAuth";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { GithubIcon } from "@hugeicons/core-free-icons";
 
 export default function TopNavBar() {
   const [mounted, setMounted] = useState(false);
@@ -68,8 +70,26 @@ export default function TopNavBar() {
           >
             Contact
           </a>
+          <a
+            href="https://github.com/samueltuoyo15/sendlib"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 font-body-md text-body-md text-white/80 hover:text-white transition-colors duration-300"
+          >
+            <HugeiconsIcon icon={GithubIcon} size={16} />
+            GitHub
+          </a>
         </div>
         <div className="flex items-center gap-md">
+          <a
+            href="https://github.com/samueltuoyo15/sendlib"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="md:hidden flex items-center p-2 text-white/80 hover:text-white transition-colors"
+            aria-label="GitHub Repository"
+          >
+            <HugeiconsIcon icon={GithubIcon} size={20} />
+          </a>
           {mounted && user ? (
             <Link 
               href="/dashboard" 

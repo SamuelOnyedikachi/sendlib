@@ -7,7 +7,7 @@ import SMTPTransport from "nodemailer/lib/smtp-transport";
  *
  * Uses the project's existing email stack (nodemailer). Supported transports:
  *  - "smtp"  : real SMTP delivery (production). Configure SMTP_HOST/PORT/USER/PASS.
- *  - "json"  : nodemailer's jsonTransport — writes the fully-formed MIME message
+ *  - "json"  : nodemailer's jsonTransport: writes the fully-formed MIME message
  *              to the server log. Intended for local development only.
  *
  * When no transport is configured, development defaults to "json" and
@@ -94,10 +94,10 @@ export async function sendAuthEmail(input: AuthEmailInput): Promise<{ messageId:
 
   if (isJson) {
     console.warn(
-      `[auth-email:json] Subject="${input.subject}" to="${input.to}" — email NOT delivered. ` +
-        `Configure SMTP (EMAIL_TRANSPORT=smtp + SMTP_*) for real delivery.`
+      `[auth-email:json] Subject="${input.subject}" to="${input.to}": email NOT delivered. ` +
+        `Configure SMTP (EMAIL_TRANSPORT=smtp + SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS) for real delivery.`
     );
   }
 
   return { messageId };
-}
+}

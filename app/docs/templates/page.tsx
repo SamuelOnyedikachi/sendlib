@@ -115,7 +115,7 @@ requests.post(
       </div>
 
       <DocsPagination
-        prev={{ title: "Basic Send", href: "/docs/send" }}
+        prev={{ title: "Batch Send", href: "/docs/batch" }}
         next={{ title: "Debugger", href: "/docs/debugger" }}
       />
     </div>

@@ -63,7 +63,6 @@ export default function DebuggerDocsPage() {
 
       <DocsPagination
         prev={{ title: "Templates", href: "/docs/templates" }}
-        next={{ title: "Batch Send", href: "/docs/batch" }}
       />
     </div>
   );
