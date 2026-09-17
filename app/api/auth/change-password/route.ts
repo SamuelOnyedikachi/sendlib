@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
       userId: authUser.id,
       currentPassword: String(body.currentPassword ?? ""),
       newPassword: String(body.newPassword ?? ""),
+      code: body.code ? String(body.code) : undefined,
       keepSessionToken: req.cookies.get(SESSION_COOKIE_NAME)?.value,
       ...device,
     });

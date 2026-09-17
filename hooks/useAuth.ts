@@ -192,7 +192,7 @@ export function useResendVerification() {
 
 export function useChangePassword() {
   return useMutation({
-    mutationFn: async (input: { currentPassword: string; newPassword: string }) => {
+    mutationFn: async (input: { currentPassword: string; newPassword: string; code?: string }) => {
       const res = await api.post<never, { success: boolean; message: string }>(
         "/auth/change-password",
         input

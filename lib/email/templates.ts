@@ -24,8 +24,8 @@ export function renderAuthEmail(opts: RenderEmailOptions): string {
   const action = opts.actionUrl
     ? `
       <tr>
-        <td style="padding:8px 0 24px 0;">
-          <a href="${escapeHtml(opts.actionUrl)}" style="background-color:#1f6feb;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px;display:inline-block;">
+        <td style="padding:16px 28px 24px 28px;">
+          <a href="${escapeHtml(opts.actionUrl)}" style="background-color:#000000;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:600;font-size:14px;display:inline-block;">
             ${escapeHtml(opts.actionLabel ?? "Continue")}
           </a>
         </td>
@@ -33,11 +33,11 @@ export function renderAuthEmail(opts: RenderEmailOptions): string {
     : "";
 
   const fallbackUrl = opts.actionUrl
-    ? `<tr><td style="padding:0 0 8px 0;"><p style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#a1a1aa;line-height:1.5;margin:0 0 4px 0;">If the button above doesn't work, copy and paste this link into your browser:</p><p style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#93c5fd;line-height:1.5;margin:0;word-break:break-all;">${escapeHtml(opts.actionUrl)}</p></td></tr>`
+    ? `<tr><td style="padding:0 28px 16px 28px;"><p style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 4px 0;">If the button above doesn't work, copy and paste this link into your browser:</p><p style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;color:#2563eb;line-height:1.5;margin:0;word-break:break-all;">${escapeHtml(opts.actionUrl)}</p></td></tr>`
     : "";
 
   const ignoreNote = opts.ignoreNote
-    ? `<tr><td style="padding:16px 0 0 0;"><p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#a1a1aa;line-height:1.6;margin:0;border-top:1px solid #1f2937;padding-top:16px;">${opts.ignoreNote}</p></td></tr>`
+    ? `<tr><td style="padding:16px 28px 0 28px;"><p style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:13px;color:#6b7280;line-height:1.6;margin:0;border-top:1px solid #e5e7eb;padding-top:16px;">${opts.ignoreNote}</p></td></tr>`
     : "";
 
   return `<!DOCTYPE html>
@@ -45,25 +45,25 @@ export function renderAuthEmail(opts: RenderEmailOptions): string {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="dark" />
-    <meta name="supported-color-schemes" content="dark" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
     <title>${escapeHtml(opts.heading)}</title>
   </head>
-  <body style="margin:0;padding:0;background-color:#020403;">
+  <body style="margin:0;padding:0;background-color:#f9fafb;">
     <span style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${escapeHtml(opts.preheader)}</span>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#020403;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f9fafb;">
       <tr>
         <td align="center" style="padding:32px 16px;">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background-color:#0a0a0a;border-radius:12px;border:1px solid #1f2937;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background-color:#ffffff;border-radius:8px;border:1px solid #e5e7eb;">
             <tr>
               <td style="padding:28px 28px 0 28px;">
-                <p style="font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:700;color:#ffffff;margin:0;">Send<span style="color:#c3a881;">lib</span></p>
+                <p style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:20px;font-weight:700;color:#111827;margin:0;">Send<span style="color:#d97706;">lib</span></p>
               </td>
             </tr>
             <tr>
               <td style="padding:24px 28px 8px 28px;">
-                <h1 style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:700;color:#ffffff;margin:0 0 8px 0;">${escapeHtml(opts.heading)}</h1>
-                <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#a1a1aa;line-height:1.6;margin:0;">${escapeHtml(opts.preheader)}</p>
+                <h1 style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:22px;font-weight:700;color:#111827;margin:0 0 8px 0;">${escapeHtml(opts.heading)}</h1>
+                <p style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;color:#4b5563;line-height:1.6;margin:0;">${escapeHtml(opts.preheader)}</p>
               </td>
             </tr>
             <tr>
@@ -78,7 +78,7 @@ export function renderAuthEmail(opts: RenderEmailOptions): string {
             ${ignoreNote}
             <tr>
               <td style="padding:24px 28px 28px 28px;">
-                <p style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#75777d;line-height:1.6;margin:0;border-top:1px solid #1f2937;padding-top:16px;">
+                <p style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;color:#9ca3af;line-height:1.6;margin:0;border-top:1px solid #e5e7eb;padding-top:16px;">
                   You received this email because a request was made on your Sendlib account.
                   If you did not make this request, you can safely ignore this email.
                   <br /><br />
@@ -100,9 +100,9 @@ export function row(paragraphHtml: string): string {
 }
 
 export function paragraph(text: string, opts: { strong?: boolean; muted?: boolean } = {}): string {
-  const color = opts.muted ? "#a1a1aa" : "#e5e7eb";
+  const color = opts.muted ? "#6b7280" : "#374151";
   const weight = opts.strong ? "600" : "400";
-  return `<p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${color};line-height:1.6;margin:0;font-weight:${weight};">${escapeHtml(text)}</p>`;
+  return `<p style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;color:${color};line-height:1.6;margin:0;font-weight:${weight};">${escapeHtml(text)}</p>`;
 }
 
 /** Monospace block for lists of sensitive artifacts (e.g. recovery codes). */
@@ -110,7 +110,7 @@ export function bulletList(items: string[]): string {
   return items
     .map(
       (item) =>
-        `<p style="font-family:Consolas,Monaco,monospace;font-size:14px;color:#e5e7eb;line-height:1.6;margin:0 0 8px 0;background-color:#020403;border:1px solid #1f2937;border-radius:6px;padding:8px 12px;">${escapeHtml(item)}</p>`
+        `<p style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;font-size:14px;color:#374151;line-height:1.6;margin:0 0 8px 0;background-color:#f3f4f6;border:1px solid #e5e7eb;border-radius:6px;padding:8px 12px;">${escapeHtml(item)}</p>`
     )
     .join("");
 }

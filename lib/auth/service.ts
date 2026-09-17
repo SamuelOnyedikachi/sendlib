@@ -400,6 +400,7 @@ export async function changePassword(input: {
   userId: string;
   currentPassword: string;
   newPassword: string;
+  code?: string;
   keepSessionToken?: string;
 } & DeviceInfo): Promise<void> {
   const pwResult = validatePassword(input.newPassword);
@@ -412,6 +413,12 @@ export async function changePassword(input: {
 
   const valid = await verifyPassword(user.passwordHash, input.currentPassword);
   if (!valid) throw AuthErrors.invalidCurrentPassword();
+
+  if (isTwoFactorEnabled(user)) {
+    if (!input.code) throw AuthErrors.invalidInput("Two-factor authentication code is required.");
+    const valid2fa = await verifyTwoFactorLogin(user, input.code);
+    if (!valid2fa.ok) throw AuthErrors.invalidTwoFactorCode();
+  }
 
   const sameAsOld = await verifyPassword(user.passwordHash, input.newPassword);
   if (sameAsOld) throw AuthErrors.invalidInput("New password must be different from the current one.");
