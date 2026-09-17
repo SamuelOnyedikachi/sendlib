@@ -30,7 +30,9 @@ export async function createSession(
 }
 
 /** Look up a live session by raw token (hashed before querying). */
-export async function findSessionByToken(token: string | undefined | null): Promise<ISession | null> {
+export async function findSessionByToken(
+  token: string | undefined | null
+): Promise<ISession | null> {
   if (!token) return null;
   return Session.findOne({ tokenHash: hashToken(token) });
 }

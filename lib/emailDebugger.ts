@@ -27,8 +27,20 @@ export type DebugReport = {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const VOID_TAGS = new Set([
-  "area", "base", "br", "col", "embed", "hr", "img", "input",
-  "link", "meta", "param", "source", "track", "wbr",
+  "area",
+  "base",
+  "br",
+  "col",
+  "embed",
+  "hr",
+  "img",
+  "input",
+  "link",
+  "meta",
+  "param",
+  "source",
+  "track",
+  "wbr",
 ]);
 
 function toList(v?: string | string[]): string[] {
@@ -123,7 +135,9 @@ export function analyzeHtmlIssues(opts: {
   }
 
   const missing = [...new Set(opts.missingVars ?? [])];
-  const unresolved = [...new Set(opts.unresolvedVars ?? extractVariables(html, opts.subject || ""))];
+  const unresolved = [
+    ...new Set(opts.unresolvedVars ?? extractVariables(html, opts.subject || "")),
+  ];
 
   for (const key of missing) {
     issues.push({
@@ -154,17 +168,23 @@ export function analyzeHtmlIssues(opts: {
       });
     }
 
-    const hasUnsub =
-      /unsubscribe/i.test(html) ||
-      /List-Unsubscribe/i.test(html);
+    const hasUnsub = /unsubscribe/i.test(html) || /List-Unsubscribe/i.test(html);
     const transactionalSlugs = new Set([
-      "welcome", "verify-email", "password-reset", "otp",
-      "invoice", "payment-successful", "payment-failed",
-      "subscription-expiring", "account-suspended",
+      "welcome",
+      "verify-email",
+      "password-reset",
+      "otp",
+      "invoice",
+      "payment-successful",
+      "payment-failed",
+      "subscription-expiring",
+      "account-suspended",
     ]);
     const isTransactional = opts.templateSlug
       ? transactionalSlugs.has(opts.templateSlug)
-      : /(password|verify|otp|invoice|receipt|one-time|suspended|subscription|welcome|payment)/i.test(`${opts.subject || ""} ${html}`);
+      : /(password|verify|otp|invoice|receipt|one-time|suspended|subscription|welcome|payment)/i.test(
+          `${opts.subject || ""} ${html}`
+        );
     if (!hasUnsub && html.length > 200 && !isTransactional) {
       issues.push({
         severity: "warning",
@@ -207,9 +227,10 @@ export function analyzeHtmlIssues(opts: {
       severity: bytes > (opts.maxHtmlBytes ?? 2 * 1024 * 1024) ? "error" : "warning",
       code: "oversized",
       title: `HTML size: ${formatBytes(bytes)}`,
-      hint: bytes > 1024 * 1024
-        ? "This may be rejected. Keep HTML well under your plan limit."
-        : "Over 100 KB can load slowly in mobile inboxes. Compress images and trim markup.",
+      hint:
+        bytes > 1024 * 1024
+          ? "This may be rejected. Keep HTML well under your plan limit."
+          : "Over 100 KB can load slowly in mobile inboxes. Compress images and trim markup.",
     });
   } else if (html && bytes > 0) {
     // informational size is shown in the UI from htmlBytes; no issue needed under 100KB
@@ -267,7 +288,8 @@ export function buildDebugReport(opts: {
   templateSlug?: string;
 }): DebugReport {
   const htmlBytes = htmlBytesOf(opts.html, opts.text);
-  const failed = opts.steps.some((s) => !s.ok && !s.skipped) || opts.issues.some((i) => i.severity === "error");
+  const failed =
+    opts.steps.some((s) => !s.ok && !s.skipped) || opts.issues.some((i) => i.severity === "error");
   const health: DebugHealth = failed ? "failed" : opts.issues.length > 0 ? "warnings" : "healthy";
   return {
     health,

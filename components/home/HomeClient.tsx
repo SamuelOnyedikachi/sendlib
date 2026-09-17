@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import Image from "next/image";
 import { useMe } from "@/hooks/useAuth";
-import { getCodeSnippet, CodeTab } from "@/utils/codeSnippets";
+import { CodeTab, getCodeSnippet } from "@/utils/codeSnippets";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import TopNavBar from "@/components/home/TopNavBar";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { GithubIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 export default function HomeClient() {
   const { data: user } = useMe();
@@ -38,15 +38,14 @@ export default function HomeClient() {
       question: "Can I send from my custom domain (e.g. hello@mycompany.com)?",
       answer: (
         <>
-          Yes! If your custom company domain is connected to Google Workspace,
-          simply link that account to Sendlib via Google OAuth. Sendlib will
-          send transactional emails directly from your custom domain (e.g.{" "}
+          Yes! If your custom company domain is connected to Google Workspace, simply link that
+          account to Sendlib via Google OAuth. Sendlib will send transactional emails directly from
+          your custom domain (e.g.{" "}
           <code className="bg-surface-variant/80 px-1.5 py-0.5 rounded text-xs">
             hello@mycompany.com
           </code>
-          ) with zero extra DNS or SPF configuration required on Sendlib. Plus,
-          Google Workspace accounts get up to{" "}
-          <strong>1,000 emails/day on Free</strong> (2,000/day on Pro) per
+          ) with zero extra DNS or SPF configuration required on Sendlib. Plus, Google Workspace
+          accounts get up to <strong>1,000 emails/day on Free</strong> (2,000/day on Pro) per
           account!
         </>
       ),
@@ -59,16 +58,14 @@ export default function HomeClient() {
     },
     {
       color: "bg-pink-500",
-      question:
-        "How does this compare to the free tier of Resend, Mailgun, or SendGrid?",
+      question: "How does this compare to the free tier of Resend, Mailgun, or SendGrid?",
       answer: (
         <>
-          Other platforms limit you to only 100 free emails per day on their
-          free plans and require strict domain verification. With Sendlib, you
-          can send up to <strong>200 emails/day</strong> per connected personal
-          Gmail account (500/day on Pro), or up to{" "}
-          <strong>1,000 emails/day</strong> per connected Google Workspace
-          account (2,000/day on Pro).
+          Other platforms limit you to only 100 free emails per day on their free plans and require
+          strict domain verification. With Sendlib, you can send up to{" "}
+          <strong>200 emails/day</strong> per connected personal Gmail account (500/day on Pro), or
+          up to <strong>1,000 emails/day</strong> per connected Google Workspace account (2,000/day
+          on Pro).
         </>
       ),
     },
@@ -214,9 +211,8 @@ export default function HomeClient() {
               </h1>
 
               <p className="font-body-lg text-base md:text-lg max-w-[600px] text-center text-secondary leading-relaxed mb-10 px-4 md:px-0">
-                The fastest way for founders and devs to send transactional
-                emails using their product's existing Gmail. Zero domains
-                needed. Zero stress.
+                The fastest way for founders and devs to send transactional emails using their
+                product's existing Gmail. Zero domains needed. Zero stress.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2 mb-4 md:mb-16 w-full">
@@ -252,44 +248,35 @@ export default function HomeClient() {
             <div className="w-full bg-[#090a0f] text-white rounded-2xl font-mono border border-zinc-800 overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-col transition-all hover:border-zinc-700 text-left">
               <div className="flex justify-between items-center px-4 py-3 bg-[#12131a] border-b border-zinc-800 gap-2">
                 <div className="flex items-center rounded-xl bg-[#07080c] border border-zinc-800/80 p-1 text-xs overflow-x-auto max-w-full flex-1 [ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  {(
-                    [
-                      "curl",
-                      "js",
-                      "python",
-                      "go",
-                      "rust",
-                      "php",
-                      "net",
-                      "java",
-                    ] as const
-                  ).map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap font-sans text-xs md:text-sm font-medium ${
-                        activeTab === tab
-                          ? "bg-zinc-800 text-white shadow-sm font-bold"
-                          : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
-                      }`}
-                    >
-                      {tab === "curl"
-                        ? "cURL"
-                        : tab === "js"
-                          ? "JavaScript"
-                          : tab === "python"
-                            ? "Python"
-                            : tab === "go"
-                              ? "Go"
-                              : tab === "rust"
-                                ? "Rust"
-                                : tab === "php"
-                                  ? "PHP"
-                                  : tab === "net"
-                                    ? ".NET"
-                                    : "Java"}
-                    </button>
-                  ))}
+                  {(["curl", "js", "python", "go", "rust", "php", "net", "java"] as const).map(
+                    (tab) => (
+                      <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
+                        className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap font-sans text-xs md:text-sm font-medium ${
+                          activeTab === tab
+                            ? "bg-zinc-800 text-white shadow-sm font-bold"
+                            : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
+                        }`}
+                      >
+                        {tab === "curl"
+                          ? "cURL"
+                          : tab === "js"
+                            ? "JavaScript"
+                            : tab === "python"
+                              ? "Python"
+                              : tab === "go"
+                                ? "Go"
+                                : tab === "rust"
+                                  ? "Rust"
+                                  : tab === "php"
+                                    ? "PHP"
+                                    : tab === "net"
+                                      ? ".NET"
+                                      : "Java"}
+                      </button>
+                    )
+                  )}
                 </div>
                 <button
                   onClick={handleCopyCode}
@@ -326,9 +313,8 @@ export default function HomeClient() {
                 Stop worrying about domains. Just send.
               </h2>
               <p className="text-secondary w-full max-w-2xl mx-auto text-base leading-relaxed">
-                Traditional email APIs force you to configure DNS records and
-                custom domains before sending a single email. Sendlib uses the
-                Gmail account your product already has.
+                Traditional email APIs force you to configure DNS records and custom domains before
+                sending a single email. Sendlib uses the Gmail account your product already has.
               </p>
             </div>
 
@@ -336,9 +322,7 @@ export default function HomeClient() {
               <table className="w-full text-sm text-left border-collapse">
                 <thead>
                   <tr className="bg-surface-container-low border-b border-outline-variant text-on-background">
-                    <th className="px-6 py-4 font-bold text-secondary w-2/5">
-                      Feature
-                    </th>
+                    <th className="px-6 py-4 font-bold text-secondary w-2/5">Feature</th>
                     <th className="px-6 py-4 text-center w-3/10 bg-primary-sendlib/5 border-x border-outline-variant/40">
                       <span className="bg-white text-black text-xs font-extrabold px-3.5 py-1 rounded-full shadow-xs inline-block">
                         Sendlib
@@ -371,9 +355,7 @@ export default function HomeClient() {
                       key={row.feature}
                       className="hover:bg-surface-container-lowest/50 transition-colors"
                     >
-                      <td className="px-6 py-4 font-semibold text-on-background">
-                        {row.feature}
-                      </td>
+                      <td className="px-6 py-4 font-semibold text-on-background">{row.feature}</td>
                       <td className="px-6 py-4 text-center font-bold text-emerald-600 bg-primary-sendlib/5 border-x border-outline-variant/40 text-xs sm:text-sm">
                         {row.sendlib}
                       </td>
@@ -414,13 +396,9 @@ export default function HomeClient() {
                   </div>
                 )}
                 <div>
-                  <h3 className="text-2xl font-extrabold text-primary-sendlib">
-                    Free
-                  </h3>
+                  <h3 className="text-2xl font-extrabold text-primary-sendlib">Free</h3>
                   <div className="flex items-end gap-1 mt-1">
-                    <span className="text-4xl font-extrabold text-primary-sendlib">
-                      $0
-                    </span>
+                    <span className="text-4xl font-extrabold text-primary-sendlib">$0</span>
                     <span className="text-secondary mb-1">/ forever</span>
                   </div>
                   <p className="text-sm text-secondary mt-2">
@@ -449,11 +427,7 @@ export default function HomeClient() {
                         stroke="currentColor"
                         strokeWidth={2.5}
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M5 13l4 4L19 7"
-                        />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                       {f}
                     </li>
@@ -476,13 +450,9 @@ export default function HomeClient() {
                 </div>
 
                 <div>
-                  <h3 className="text-2xl font-extrabold text-primary-sendlib">
-                    Pro
-                  </h3>
+                  <h3 className="text-2xl font-extrabold text-primary-sendlib">Pro</h3>
                   <div className="flex items-end gap-1 mt-1">
-                    <span className="text-4xl font-extrabold text-primary-sendlib">
-                      ₦4,000
-                    </span>
+                    <span className="text-4xl font-extrabold text-primary-sendlib">₦4,000</span>
                     <span className="text-secondary mb-1">/ month</span>
                   </div>
                   <p className="text-sm text-secondary mt-2">
@@ -511,11 +481,7 @@ export default function HomeClient() {
                         stroke="currentColor"
                         strokeWidth={2.5}
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M5 13l4 4L19 7"
-                        />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                       {f}
                     </li>
@@ -547,8 +513,8 @@ export default function HomeClient() {
                 Frequently Asked Questions
               </h2>
               <p className="font-body-lg text-body-lg text-on-surface-variant max-w-[600px] mx-auto">
-                Got questions about how Sendlib is different from other
-                transactional email sending platforms? We have answers.
+                Got questions about how Sendlib is different from other transactional email sending
+                platforms? We have answers.
               </p>
             </div>
 

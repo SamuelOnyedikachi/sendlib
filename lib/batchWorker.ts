@@ -1,13 +1,13 @@
-import { connectToRedis } from "./redis";
-import { connectDB } from "./db";
 import BatchJob from "@/models/BatchJob";
+import { connectDB } from "./db";
 import { sendGmailEmail } from "./gmail";
+import { connectToRedis } from "./redis";
 
 const BATCH_QUEUE_KEY = "batch_queue";
 // Gmail API quota: 250 units/user/second. Each send = 100 units = 2.5 sends/sec max.
 // We stay well under that ceiling to avoid per-account quota errors.
-const GMAIL_SEND_DELAY_MS = 1000;     // 1/sec for @gmail.com - conservative, Google's hard cap is 500/day anyway
-const WORKSPACE_SEND_DELAY_MS = 500;  // 2/sec for Workspace - safely under the 2.5/sec API quota
+const GMAIL_SEND_DELAY_MS = 1000; // 1/sec for @gmail.com - conservative, Google's hard cap is 500/day anyway
+const WORKSPACE_SEND_DELAY_MS = 500; // 2/sec for Workspace - safely under the 2.5/sec API quota
 
 function extractRawEmail(from: string): string {
   // Handle both "Brand Name <email@domain.com>" and plain "email@domain.com"
@@ -27,15 +27,18 @@ function sleep(ms: number): Promise<void> {
  * Interpolate template variables into a string.
  * Replaces {{name}}, {{company}}, etc. with values from the variables map.
  */
-function interpolate(template: string, variables: any = {}): string {
+function interpolate(
+  template: string,
+  variables: Record<string, unknown> | Map<string, unknown> = {}
+): string {
   return template.replace(/\{\{(\w+)\}\}/g, (_, key) => {
     let val;
-    if (variables && typeof variables.get === 'function') {
+    if (variables instanceof Map) {
       val = variables.get(key);
     } else if (variables) {
       val = variables[key];
     }
-    return val ?? `{{${key}}}`;
+    return val !== undefined && val !== null ? String(val) : `{{${key}}}`;
   });
 }
 
@@ -63,14 +66,18 @@ async function processBatchJob(jobId: string): Promise<void> {
   }
 
   if (job.status === "done" || job.status === "failed") {
-    console.warn(`[BatchWorker] Job ${jobId} already in terminal state "${job.status}" - skipping.`);
+    console.warn(
+      `[BatchWorker] Job ${jobId} already in terminal state "${job.status}" - skipping.`
+    );
     return;
   }
 
   // Mark as processing
   job.status = "processing";
   await job.save();
-  console.log(`[BatchWorker] Starting to process job ${jobId} with ${job.recipients.length} recipients...`);
+  console.log(
+    `[BatchWorker] Starting to process job ${jobId} with ${job.recipients.length} recipients...`
+  );
 
   const retentionDays = 90;
   // Extract the raw email from the stored from field before determining delay.
@@ -88,7 +95,9 @@ async function processBatchJob(jobId: string): Promise<void> {
       const text = job.text ? interpolate(job.text, recipient.variables ?? {}) : undefined;
       const subject = interpolate(job.subject, recipient.variables ?? {});
 
-      console.log(`[BatchWorker] Sending to ${recipient.email} (recipient ${i + 1}/${job.recipients.length})...`);
+      console.log(
+        `[BatchWorker] Sending to ${recipient.email} (recipient ${i + 1}/${job.recipients.length})...`
+      );
 
       const result = await sendGmailEmail(job.userId.toString(), {
         from: job.from,
@@ -114,10 +123,12 @@ async function processBatchJob(jobId: string): Promise<void> {
           $inc: { sent: 1 },
         }
       );
-      console.log(`[BatchWorker] Sent successfully to ${recipient.email}. MessageId: ${result.messageId}`);
+      console.log(
+        `[BatchWorker] Sent successfully to ${recipient.email}. MessageId: ${result.messageId}`
+      );
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : "Unknown error";
-      
+
       // If we hit the Google quota, pause the job immediately.
       if (errMsg.includes("Daily limit reached")) {
         console.warn(`[BatchWorker] Job ${jobId} hit daily limit. Pausing to resume later.`);
@@ -146,10 +157,12 @@ async function processBatchJob(jobId: string): Promise<void> {
 
   // Mark job as done
   await BatchJob.updateOne({ _id: job._id }, { $set: { status: "done" } });
-  
+
   // Reload job to get accurate final counts (or rely on atomic increments)
   const finalJob = await BatchJob.findById(job._id);
-  console.log(`[BatchWorker] Job ${jobId} completed successfully! Total sent: ${finalJob?.sent ?? 0}, Not delivered: ${finalJob?.failed ?? 0}`);
+  console.log(
+    `[BatchWorker] Job ${jobId} completed successfully! Total sent: ${finalJob?.sent ?? 0}, Not delivered: ${finalJob?.failed ?? 0}`
+  );
 }
 
 /**
@@ -184,7 +197,7 @@ export async function startBatchWorker(): Promise<void> {
   }
 
   // Main worker loop
-  // eslint-disable-next-line no-constant-condition
+
   while (true) {
     try {
       // BRPOP blocks up to 5 seconds waiting for a job.
@@ -206,27 +219,32 @@ export async function startBatchWorker(): Promise<void> {
 /**
  * Periodically checks for paused jobs and requeues them.
  * If a job was paused due to daily limits, we just put it back in the queue.
- * When the worker picks it up, it tries to send. If the day hasn't reset yet, 
+ * When the worker picks it up, it tries to send. If the day hasn't reset yet,
  * it immediately pauses again (cheap operation). If the day has reset, it resumes sending!
  */
 export function startBatchResumer(): void {
   // Run every 1 hour (3600000 ms)
-  setInterval(async () => {
-    try {
-      await connectDB();
-      const pausedJobs = await BatchJob.find({ status: "paused_limit_reached" }).select("_id").lean();
-      if (pausedJobs.length > 0) {
-        console.log(`[BatchResumer] Waking up ${pausedJobs.length} paused job(s)...`);
-        const ids = pausedJobs.map((j) => j._id.toString());
-        await BatchJob.updateMany({ _id: { $in: ids } }, { $set: { status: "queued" } });
-        
-        const redis = connectToRedis();
-        for (const id of ids) {
-          await redis.lpush(BATCH_QUEUE_KEY, id);
+  setInterval(
+    async () => {
+      try {
+        await connectDB();
+        const pausedJobs = await BatchJob.find({ status: "paused_limit_reached" })
+          .select("_id")
+          .lean();
+        if (pausedJobs.length > 0) {
+          console.log(`[BatchResumer] Waking up ${pausedJobs.length} paused job(s)...`);
+          const ids = pausedJobs.map((j) => j._id.toString());
+          await BatchJob.updateMany({ _id: { $in: ids } }, { $set: { status: "queued" } });
+
+          const redis = connectToRedis();
+          for (const id of ids) {
+            await redis.lpush(BATCH_QUEUE_KEY, id);
+          }
         }
+      } catch (err) {
+        console.error("[BatchResumer] Error checking for paused jobs:", err);
       }
-    } catch (err) {
-      console.error("[BatchResumer] Error checking for paused jobs:", err);
-    }
-  }, 1000 * 60 * 60);
+    },
+    1000 * 60 * 60
+  );
 }

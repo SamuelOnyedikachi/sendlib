@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 
 export interface DebugStep {
@@ -64,7 +64,13 @@ export function useInspectEmail() {
     }) => {
       const res = await api.post<
         never,
-        { success: boolean; sent?: boolean; message?: string; messageId?: string | null; data: DebugReport }
+        {
+          success: boolean;
+          sent?: boolean;
+          message?: string;
+          messageId?: string | null;
+          data: DebugReport;
+        }
       >("/debugger", payload);
       return {
         sent: !!res.sent,

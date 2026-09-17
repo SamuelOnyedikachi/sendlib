@@ -11,8 +11,15 @@ export async function connectDB(): Promise<typeof mongoose> {
   if (!connecting) {
     connecting = mongoose
       .connect(MONGODB_URI)
-      .then((m) => { cached = m; connecting = null; return m; })
-      .catch((err) => { connecting = null; throw err; });
+      .then((m) => {
+        cached = m;
+        connecting = null;
+        return m;
+      })
+      .catch((err) => {
+        connecting = null;
+        throw err;
+      });
   }
 
   return connecting;

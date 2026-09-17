@@ -1,13 +1,13 @@
 "use client";
 
-import { HugeiconsIcon } from "@hugeicons/react";
+import type { DebugIssue, DebugReport, DebugStep } from "@/hooks/useDebugger";
 import {
-  CheckmarkCircle01Icon,
-  CancelCircleIcon,
   Alert02Icon,
+  CancelCircleIcon,
+  CheckmarkCircle01Icon,
   MinusSignCircleIcon,
 } from "@hugeicons/core-free-icons";
-import type { DebugIssue, DebugReport, DebugStep } from "@/hooks/useDebugger";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;
@@ -18,16 +18,34 @@ function formatBytes(n: number): string {
 function StepIcon({ step }: { step: DebugStep }) {
   if (step.skipped) {
     return (
-      <HugeiconsIcon icon={MinusSignCircleIcon} size={16} color="currentColor" strokeWidth={1.5} className="text-secondary/50" />
+      <HugeiconsIcon
+        icon={MinusSignCircleIcon}
+        size={16}
+        color="currentColor"
+        strokeWidth={1.5}
+        className="text-secondary/50"
+      />
     );
   }
   if (step.ok) {
     return (
-      <HugeiconsIcon icon={CheckmarkCircle01Icon} size={16} color="currentColor" strokeWidth={1.5} className="text-emerald-400" />
+      <HugeiconsIcon
+        icon={CheckmarkCircle01Icon}
+        size={16}
+        color="currentColor"
+        strokeWidth={1.5}
+        className="text-emerald-400"
+      />
     );
   }
   return (
-    <HugeiconsIcon icon={CancelCircleIcon} size={16} color="currentColor" strokeWidth={1.5} className="text-destructive" />
+    <HugeiconsIcon
+      icon={CancelCircleIcon}
+      size={16}
+      color="currentColor"
+      strokeWidth={1.5}
+      className="text-destructive"
+    />
   );
 }
 
@@ -51,11 +69,15 @@ export function DebugPipeline({
                 <StepIcon step={step} />
               </div>
               {idx < report.steps.length - 1 && (
-                <div className={`w-px flex-1 my-1 ${step.ok && !step.skipped ? "bg-emerald-500/30" : "bg-outline-variant/50"}`} />
+                <div
+                  className={`w-px flex-1 my-1 ${step.ok && !step.skipped ? "bg-emerald-500/30" : "bg-outline-variant/50"}`}
+                />
               )}
             </div>
             <div className={`pb-3 min-w-0 ${idx === report.steps.length - 1 ? "pb-0" : ""}`}>
-              <p className={`text-sm font-semibold leading-5 ${step.skipped ? "text-secondary" : step.ok ? "text-on-background" : "text-destructive"}`}>
+              <p
+                className={`text-sm font-semibold leading-5 ${step.skipped ? "text-secondary" : step.ok ? "text-on-background" : "text-destructive"}`}
+              >
                 {step.label}
               </p>
               {!compact && (
@@ -79,7 +101,8 @@ export function DebugPipeline({
 
       {errors.length === 0 && warnings.length === 0 && (
         <p className="text-xs text-secondary border border-outline-variant/50 rounded-lg px-3 py-2">
-          No issues found{typeof report.htmlBytes === "number" ? ` · HTML ${formatBytes(report.htmlBytes)}` : ""}.
+          No issues found
+          {typeof report.htmlBytes === "number" ? ` · HTML ${formatBytes(report.htmlBytes)}` : ""}.
         </p>
       )}
     </div>
@@ -91,9 +114,7 @@ function IssueRow({ issue }: { issue: DebugIssue }) {
   return (
     <div
       className={`rounded-lg border px-3 py-2.5 ${
-        isError
-          ? "border-destructive/20 bg-destructive/5"
-          : "border-amber-500/20 bg-amber-500/5"
+        isError ? "border-destructive/20 bg-destructive/5" : "border-amber-500/20 bg-amber-500/5"
       }`}
     >
       <div className="flex items-start gap-2">
@@ -130,7 +151,9 @@ export function HealthBadge({ health }: { health: DebugReport["health"] | undefi
   };
   const label = { healthy: "Clean", warnings: "Warnings", failed: "Failed" };
   return (
-    <span className={`text-[10px] font-semibold tracking-wide uppercase px-1.5 py-0.5 rounded ${map[health]}`}>
+    <span
+      className={`text-[10px] font-semibold tracking-wide uppercase px-1.5 py-0.5 rounded ${map[health]}`}
+    >
       {label[health]}
     </span>
   );

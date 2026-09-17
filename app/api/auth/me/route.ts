@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { connectDB } from "@/lib/db";
 import { getAuthUser } from "@/lib/auth";
-import User from "@/models/User";
-import { syncUserSubscription } from "@/lib/paystack";
 import { isTwoFactorEnabled } from "@/lib/auth/twoFactor";
+import { connectDB } from "@/lib/db";
+import { syncUserSubscription } from "@/lib/paystack";
+import User from "@/models/User";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   try {

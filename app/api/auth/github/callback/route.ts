@@ -1,13 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
-import axios from "@/lib/axios";
-import { connectDB } from "@/lib/db";
-import { setAuthCookies, getClientIp } from "@/lib/auth";
+import { getClientIp, setAuthCookies } from "@/lib/auth";
 import { createSession } from "@/lib/auth/sessions";
 import { normalizeEmail } from "@/lib/auth/utils";
+import axios from "@/lib/axios";
+import { connectDB } from "@/lib/db";
 import User from "@/models/User";
+import { NextRequest, NextResponse } from "next/server";
 
-const { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, NEXT_PUBLIC_APP_URL } =
-  process.env;
+const { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, NEXT_PUBLIC_APP_URL } = process.env;
 
 interface GithubProfile {
   id: number;
@@ -30,9 +29,7 @@ export async function GET(req: NextRequest) {
   const oauthStateCookie = req.cookies.get("oauth_state")?.value;
 
   if (!code || !stateParam || stateParam !== oauthStateCookie) {
-    return NextResponse.redirect(
-      `${NEXT_PUBLIC_APP_URL}/login?error=invalid_state_or_code`,
-    );
+    return NextResponse.redirect(`${NEXT_PUBLIC_APP_URL}/login?error=invalid_state_or_code`);
   }
 
   try {
@@ -47,34 +44,25 @@ export async function GET(req: NextRequest) {
         client_secret: GITHUB_CLIENT_SECRET,
         code,
       },
-      { headers: { Accept: "application/json" } },
+      { headers: { Accept: "application/json" } }
     );
 
     const { access_token, error } = tokenRes.data;
     if (error || !access_token) {
-      return NextResponse.redirect(
-        `${NEXT_PUBLIC_APP_URL}/login?error=github_token`,
-      );
+      return NextResponse.redirect(`${NEXT_PUBLIC_APP_URL}/login?error=github_token`);
     }
 
     // Fetch GitHub profile
-    const profileRes = await axios.get<GithubProfile>(
-      "https://api.github.com/user",
-      {
-        headers: { Authorization: `Bearer ${access_token}` },
-      },
-    );
+    const profileRes = await axios.get<GithubProfile>("https://api.github.com/user", {
+      headers: { Authorization: `Bearer ${access_token}` },
+    });
     const profile = profileRes.data;
 
     // Fetch verified primary email for account linking and verification
-    const emailRes = await axios.get<GithubEmail[]>(
-      "https://api.github.com/user/emails",
-      {
-        headers: { Authorization: `Bearer ${access_token}` },
-      },
-    );
-    const email =
-      emailRes.data.find((e) => e.primary && e.verified)?.email ?? null;
+    const emailRes = await axios.get<GithubEmail[]>("https://api.github.com/user/emails", {
+      headers: { Authorization: `Bearer ${access_token}` },
+    });
+    const email = emailRes.data.find((e) => e.primary && e.verified)?.email ?? null;
 
     await connectDB();
 
@@ -121,8 +109,6 @@ export async function GET(req: NextRequest) {
     return response;
   } catch (err) {
     console.error("GitHub OAuth callback error:", err);
-    return NextResponse.redirect(
-      `${NEXT_PUBLIC_APP_URL}/login?error=github_callback`,
-    );
+    return NextResponse.redirect(`${NEXT_PUBLIC_APP_URL}/login?error=github_callback`);
   }
 }

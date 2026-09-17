@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  eslint: { ignoreDuringBuilds: true },
   serverExternalPackages: ["argon2", "mongoose"],
   images: {
     qualities: [50, 75, 100],
@@ -28,4 +29,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-

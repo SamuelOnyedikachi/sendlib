@@ -1,24 +1,17 @@
-import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import ApiKey from "@/models/ApiKey";
 import BatchJob from "@/models/BatchJob";
 import argon2 from "argon2";
 import mongoose from "mongoose";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const rawKey =
-      req.headers.get("x-api-key") ??
-      req.headers.get("authorization")?.replace(/^bearer\s+/i, "");
+      req.headers.get("x-api-key") ?? req.headers.get("authorization")?.replace(/^bearer\s+/i, "");
 
     if (!rawKey) {
-      return NextResponse.json(
-        { success: false, message: "API key required." },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, message: "API key required." }, { status: 401 });
     }
 
     await connectDB();
@@ -26,7 +19,10 @@ export async function GET(
     // Authenticate the API key
     const parts = rawKey.split("_");
     if (parts.length < 3) {
-      return NextResponse.json({ success: false, message: "Invalid API key format." }, { status: 401 });
+      return NextResponse.json(
+        { success: false, message: "Invalid API key format." },
+        { status: 401 }
+      );
     }
 
     const prefix = `${parts[0]}_${parts[1]}`;
@@ -42,7 +38,10 @@ export async function GET(
     }
 
     if (!authenticatedUserId) {
-      return NextResponse.json({ success: false, message: "Invalid or revoked API key." }, { status: 401 });
+      return NextResponse.json(
+        { success: false, message: "Invalid or revoked API key." },
+        { status: 401 }
+      );
     }
 
     // Resolve the dynamic route param
@@ -76,8 +75,7 @@ export async function GET(
       processedAt: r.processedAt ?? null,
     }));
 
-    const progress =
-      job.total > 0 ? Math.round(((job.sent + job.failed) / job.total) * 100) : 0;
+    const progress = job.total > 0 ? Math.round(((job.sent + job.failed) / job.total) * 100) : 0;
 
     return NextResponse.json({
       success: true,
@@ -93,6 +91,9 @@ export async function GET(
     });
   } catch (err) {
     console.error("/api/batch/[id] GET error:", err);
-    return NextResponse.json({ success: false, message: "Internal server error." }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: "Internal server error." },
+      { status: 500 }
+    );
   }
 }

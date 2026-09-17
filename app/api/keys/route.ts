@@ -1,13 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { requireAuthUser } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
+import { getEffectiveUserPlan } from "@/lib/paystack";
 import ApiKey, { IApiKey } from "@/models/ApiKey";
 import GmailAccount from "@/models/GmailAccount";
 import User from "@/models/User";
-import { getEffectiveUserPlan } from "@/lib/paystack";
 import argon2 from "argon2";
-import crypto from "crypto";
 import mongoose from "mongoose";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   try {
@@ -57,7 +57,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          message: "You must connect at least one Gmail account before creating an API key. Go to Dashboard -> Accounts to connect a Gmail account.",
+          message:
+            "You must connect at least one Gmail account before creating an API key. Go to Dashboard -> Accounts to connect a Gmail account.",
         },
         { status: 400 }
       );

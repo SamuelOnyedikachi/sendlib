@@ -1,21 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { toast } from "sonner";
 import AuthShell from "@/components/auth/AuthShell";
 import { FormField } from "@/components/auth/FormField";
-import { useLogin, useCompleteTwoFactorLogin, useMe } from "@/hooks/useAuth";
+import { SocialButtons } from "@/components/auth/SocialButtons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SocialButtons } from "@/components/auth/SocialButtons";
+import { useCompleteTwoFactorLogin, useLogin, useMe } from "@/hooks/useAuth";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const OAUTH_ERRORS: Record<string, string> = {
   invalid_state_or_code: "The sign-in link expired. Please try again.",
   google_callback: "Google sign-in failed. Please try again.",
-  google_profile:
-    "Google did not return a profile. Please try again or use the email form.",
+  google_profile: "Google did not return a profile. Please try again or use the email form.",
   github_token: "GitHub sign-in failed. Please try again.",
   github_callback: "GitHub sign-in failed. Please try again.",
 };
@@ -45,9 +44,7 @@ export default function LoginPage() {
   const complete2fa = useCompleteTwoFactorLogin();
 
   const nextPath =
-    typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search).get("next")
-      : null;
+    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("next") : null;
 
   useEffect(() => {
     const oauth = getOAuthError();
@@ -60,9 +57,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!isLoading && user) {
-      router.push(
-        nextPath && nextPath.startsWith("/dashboard") ? nextPath : "/dashboard",
-      );
+      router.push(nextPath && nextPath.startsWith("/dashboard") ? nextPath : "/dashboard");
     }
   }, [isLoading, user, router, nextPath]);
 
@@ -91,11 +86,7 @@ export default function LoginPage() {
             return;
           }
           toast.success("Logged in successfully.");
-          router.push(
-            nextPath && nextPath.startsWith("/dashboard")
-              ? nextPath
-              : "/dashboard",
-          );
+          router.push(nextPath && nextPath.startsWith("/dashboard") ? nextPath : "/dashboard");
         },
         onError: (err: unknown) => {
           setFieldError(
@@ -103,10 +94,10 @@ export default function LoginPage() {
               ? err.message
               : typeof err === "string"
                 ? err
-                : "Login failed. Please try again.",
+                : "Login failed. Please try again."
           );
         },
-      },
+      }
     );
   };
 
@@ -118,25 +109,15 @@ export default function LoginPage() {
       {
         onSuccess: () => {
           toast.success("Two-factor verified. Logged in.");
-          router.push(
-            nextPath && nextPath.startsWith("/dashboard")
-              ? nextPath
-              : "/dashboard",
-          );
+          router.push(nextPath && nextPath.startsWith("/dashboard") ? nextPath : "/dashboard");
         },
         onError: (err: unknown) => {
-          setFieldError(
-            err instanceof Error
-              ? err.message
-              : "Invalid code. Please try again.",
-          );
+          setFieldError(err instanceof Error ? err.message : "Invalid code. Please try again.");
           setCode("");
         },
-      },
+      }
     );
   };
-
-
 
   const normalizedTwoFactorCode = code.replace(/[- ]/g, "");
   const isTwoFactorCodeValid =
@@ -152,9 +133,7 @@ export default function LoginPage() {
 
         <div className="flex items-center gap-3">
           <div className="h-px flex-1 bg-outline-variant" />
-          <span className="font-label-xs text-[11px] text-on-surface-variant">
-            or
-          </span>
+          <span className="font-label-xs text-[11px] text-on-surface-variant">or</span>
           <div className="h-px flex-1 bg-outline-variant" />
         </div>
 
@@ -191,9 +170,37 @@ export default function LoginPage() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface focus:outline-none cursor-pointer"
                 >
                   {showPassword ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                      <line x1="2" x2="22" y1="2" y2="22" />
+                    </svg>
                   ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
                   )}
                 </button>
               </div>
@@ -245,7 +252,7 @@ export default function LoginPage() {
                     e.target.value
                       .toUpperCase()
                       .replace(/[^A-Z0-9- ]/g, "")
-                      .slice(0, 19),
+                      .slice(0, 19)
                   )
                 }
               />

@@ -1,23 +1,20 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Command as CommandPrimitive } from "cmdk"
+import { Command as CommandPrimitive } from "cmdk";
+import * as React from "react";
 
-import { cn } from "@/lib/utils"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Search01Icon, Tick01Icon } from "@hugeicons/core-free-icons"
+} from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import { Search01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
-function Command({
-  className,
-  ...props
-}: React.ComponentProps<typeof CommandPrimitive>) {
+function Command({ className, ...props }: React.ComponentProps<typeof CommandPrimitive>) {
   return (
     <CommandPrimitive
       data-slot="command"
@@ -27,7 +24,7 @@ function Command({
       )}
       {...props}
     />
-  )
+  );
 }
 
 function CommandDialog({
@@ -38,33 +35,28 @@ function CommandDialog({
   showCloseButton = true,
   ...props
 }: Omit<React.ComponentProps<typeof Dialog>, "children"> & {
-  title?: string
-  description?: string
-  className?: string
-  showCloseButton?: boolean
-  children: React.ReactNode
+  title?: string;
+  description?: string;
+  className?: string;
+  showCloseButton?: boolean;
+  children: React.ReactNode;
 }) {
   return (
     <Dialog {...props}>
       <DialogContent
         align="top"
         showCloseButton={showCloseButton}
-        className={cn(
-          "gap-0 overflow-hidden rounded-2xl p-0 shadow-2xl",
-          className
-        )}
+        className={cn("gap-0 overflow-hidden rounded-2xl p-0 shadow-2xl", className)}
         style={{ width: "640px" }}
       >
         <DialogHeader className="sr-only">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <Command className="max-h-[min(72vh,560px)] bg-transparent p-0">
-          {children}
-        </Command>
+        <Command className="max-h-[min(72vh,560px)] bg-transparent p-0">{children}</Command>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 function CommandInput({
@@ -95,13 +87,10 @@ function CommandInput({
         Esc
       </kbd>
     </div>
-  )
+  );
 }
 
-function CommandList({
-  className,
-  ...props
-}: React.ComponentProps<typeof CommandPrimitive.List>) {
+function CommandList({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.List>) {
   return (
     <CommandPrimitive.List
       data-slot="command-list"
@@ -111,7 +100,7 @@ function CommandList({
       )}
       {...props}
     />
-  )
+  );
 }
 
 function CommandEmpty({
@@ -124,7 +113,7 @@ function CommandEmpty({
       className={cn("px-3 py-10 text-center text-sm text-secondary", className)}
       {...props}
     />
-  )
+  );
 }
 
 function CommandGroup({
@@ -140,7 +129,7 @@ function CommandGroup({
       )}
       {...props}
     />
-  )
+  );
 }
 
 function CommandSeparator({
@@ -153,7 +142,7 @@ function CommandSeparator({
       className={cn("-mx-1 my-1 h-px bg-outline-variant/50", className)}
       {...props}
     />
-  )
+  );
 }
 
 function CommandItem({
@@ -171,15 +160,17 @@ function CommandItem({
       {...props}
     >
       {children}
-      <HugeiconsIcon icon={Tick01Icon} className="pointer-events-none absolute right-3 hidden size-4 group-data-[checked=true]/command-item:block" color="currentColor" strokeWidth={1.5} />
+      <HugeiconsIcon
+        icon={Tick01Icon}
+        className="pointer-events-none absolute right-3 hidden size-4 group-data-[checked=true]/command-item:block"
+        color="currentColor"
+        strokeWidth={1.5}
+      />
     </CommandPrimitive.Item>
-  )
+  );
 }
 
-function CommandShortcut({
-  className,
-  ...props
-}: React.ComponentProps<"span">) {
+function CommandShortcut({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
       data-slot="command-shortcut"
@@ -189,7 +180,7 @@ function CommandShortcut({
       )}
       {...props}
     />
-  )
+  );
 }
 
 export {
@@ -202,4 +193,4 @@ export {
   CommandItem,
   CommandShortcut,
   CommandSeparator,
-}
+};

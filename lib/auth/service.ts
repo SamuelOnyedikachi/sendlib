@@ -1,33 +1,59 @@
 import { connectDB } from "@/lib/db";
+import { sendAuthEmail } from "@/lib/email/authEmail";
+import { appBaseUrl } from "@/lib/email/templates";
+import {
+  buildPasswordChangedEmailHtml,
+  buildPasswordResetEmailHtml,
+  buildResendVerificationEmailHtml,
+  buildTwoFactorDisabledEmailHtml,
+  buildTwoFactorEnabledEmailHtml,
+  buildVerifyEmailHtml,
+  buildWelcomeEmailHtml,
+  formatExpiryLabel,
+} from "@/lib/email/templates.builders";
 import User, { IUser } from "@/models/User";
 import { AuthErrors } from "./errors";
 import {
-  hashPassword, verifyPassword, DUMMY_PASSWORD_HASH, validateEmail, validatePassword,
+  DUMMY_PASSWORD_HASH,
+  hashPassword,
+  validateEmail,
+  validatePassword,
+  verifyPassword,
 } from "./passwords";
-import { normalizeEmail, displayNameFromEmail, hashToken } from "./utils";
+import { recordSecurityEvent } from "./securityEvents";
 import {
-  createSession, activateSession, incrementTwoFactorFailure, revokeAllSessionsForUser,
-  findSessionByToken, revokeSession, MAX_TWO_FACTOR_ATTEMPTS, PENDING_SESSION_TTL_MS,
+  MAX_TWO_FACTOR_ATTEMPTS,
+  PENDING_SESSION_TTL_MS,
+  activateSession,
+  createSession,
+  findSessionByToken,
+  incrementTwoFactorFailure,
+  revokeAllSessionsForUser,
+  revokeSession,
 } from "./sessions";
 import {
-  createVerificationToken, consumeVerificationToken, consumeVerificationTokenAllForKind,
-  findUserByEmail, TOKEN_TTL_MS,
-} from "./tokens";
-import {
-  checkLoginThrottle, recordLoginFailure, clearLoginFailures, incrementAndCheckAttempt, clearAttempts,
+  checkLoginThrottle,
+  clearAttempts,
+  clearLoginFailures,
+  incrementAndCheckAttempt,
+  recordLoginFailure,
 } from "./throttle";
 import {
-  isTwoFactorEnabled, startTwoFactorSetup as start2fa, confirmTwoFactorSetup as confirm2fa,
-  verifyTwoFactorLogin, verifyTwoFactorTotp, disableTwoFactor as disable2fa,
-} from "./twoFactor";
-import { recordSecurityEvent } from "./securityEvents";
-import { sendAuthEmail } from "@/lib/email/authEmail";
+  TOKEN_TTL_MS,
+  consumeVerificationToken,
+  consumeVerificationTokenAllForKind,
+  createVerificationToken,
+  findUserByEmail,
+} from "./tokens";
 import {
-  buildVerifyEmailHtml, buildResendVerificationEmailHtml, buildPasswordResetEmailHtml,
-  buildPasswordChangedEmailHtml, buildTwoFactorEnabledEmailHtml, buildTwoFactorDisabledEmailHtml,
-  buildWelcomeEmailHtml, formatExpiryLabel,
-} from "@/lib/email/templates.builders";
-import { appBaseUrl } from "@/lib/email/templates";
+  confirmTwoFactorSetup as confirm2fa,
+  disableTwoFactor as disable2fa,
+  isTwoFactorEnabled,
+  startTwoFactorSetup as start2fa,
+  verifyTwoFactorLogin,
+  verifyTwoFactorTotp,
+} from "./twoFactor";
+import { displayNameFromEmail, hashToken, normalizeEmail } from "./utils";
 
 type DeviceInfo = { ip?: string; userAgent?: string };
 
@@ -70,9 +96,10 @@ async function sendVerificationEmail(user: IUser, kind: "initial" | "resend"): P
     await sendAuthEmail({
       to: user.email!,
       subject: kind === "resend" ? "Verify your email address" : "Confirm your Sendlib account",
-      html: kind === "resend"
-        ? buildResendVerificationEmailHtml(user.displayName, url, label)
-        : buildVerifyEmailHtml(user.displayName, url, label),
+      html:
+        kind === "resend"
+          ? buildResendVerificationEmailHtml(user.displayName, url, label)
+          : buildVerifyEmailHtml(user.displayName, url, label),
       text: `Verify your email address at ${url}. This link expires in ${label}.`,
     });
     return true;
@@ -138,7 +165,9 @@ export async function signup(input: SignupInput): Promise<SignupResult> {
   await recordSecurityEvent({ userId: user._id.toString(), type: "signup", ...input });
   if (verificationEmailSent) {
     await recordSecurityEvent({
-      userId: user._id.toString(), type: "verification_email_sent", ...input,
+      userId: user._id.toString(),
+      type: "verification_email_sent",
+      ...input,
     });
   }
 
@@ -234,13 +263,16 @@ export async function completeTwoFactorLogin(
 
   const session = await findSessionByToken(input.sessionToken);
   const sessionUsable =
-    session && session.status === "pending" && !session.revokedAt && session.expiresAt.getTime() > Date.now();
+    session &&
+    session.status === "pending" &&
+    !session.revokedAt &&
+    session.expiresAt.getTime() > Date.now();
   if (!sessionUsable) throw AuthErrors.invalidOrExpiredToken();
 
-  const user = await User.findById(session!.userId);
+  const user = await User.findById(session?.userId);
   if (!user || !isTwoFactorEnabled(user)) throw AuthErrors.invalidCredentials();
 
-  if (session!.failedTwoFactorAttempts >= MAX_TWO_FACTOR_ATTEMPTS) {
+  if (session?.failedTwoFactorAttempts >= MAX_TWO_FACTOR_ATTEMPTS) {
     await revokeSession(input.sessionToken);
     throw AuthErrors.tooManyAttempts();
   }
@@ -252,7 +284,10 @@ export async function completeTwoFactorLogin(
   if (!result.ok) {
     await incrementTwoFactorFailure(session!);
     await recordSecurityEvent({
-      userId: user._id.toString(), type: "two_factor_failed", ip: input.ip, userAgent: input.userAgent,
+      userId: user._id.toString(),
+      type: "two_factor_failed",
+      ip: input.ip,
+      userAgent: input.userAgent,
     });
     throw AuthErrors.invalidTwoFactorCode();
   }
@@ -262,7 +297,8 @@ export async function completeTwoFactorLogin(
   await recordSecurityEvent({
     userId: user._id.toString(),
     type: result.method === "recovery" ? "login_recovery_code" : "login_2fa",
-    ip: input.ip, userAgent: input.userAgent,
+    ip: input.ip,
+    userAgent: input.userAgent,
   });
 
   return { user: toPublicUser(user), sessionToken: input.sessionToken };
@@ -290,7 +326,9 @@ export async function verifyEmail(input: VerifyEmailInput): Promise<VerifyEmailR
     { emailVerified: true, emailVerifiedAt: new Date() }
   );
   // Any residual verification links for this user are dead now.
-  await consumeVerificationTokenAllForKind(result.userId, "email_verification").catch(() => undefined);
+  await consumeVerificationTokenAllForKind(result.userId, "email_verification").catch(
+    () => undefined
+  );
   await recordSecurityEvent({ userId: result.userId, type: "email_verified" });
   return { ok: true };
 }
@@ -307,7 +345,8 @@ export async function resendVerificationEmail(input: {
   const sent = await sendVerificationEmail(user, "resend");
   if (sent) {
     await recordSecurityEvent({
-      userId: user._id.toString(), type: "verification_email_sent",
+      userId: user._id.toString(),
+      type: "verification_email_sent",
     });
   }
   return { emailSent: sent };
@@ -321,7 +360,9 @@ export interface ForgotPasswordInput extends DeviceInfo {
 }
 
 /** Always returns a generic outcome: never reveals whether an account exists. */
-export async function requestPasswordReset(input: ForgotPasswordInput): Promise<{ emailSent: boolean }> {
+export async function requestPasswordReset(
+  input: ForgotPasswordInput
+): Promise<{ emailSent: boolean }> {
   const emailResult = validateEmail(input.email);
   if (!emailResult.ok) return { emailSent: false };
   const email = normalizeEmail(emailResult.value);
@@ -344,7 +385,10 @@ export async function requestPasswordReset(input: ForgotPasswordInput): Promise<
       text: `Reset your password at ${url}. This link expires in ${label}.`,
     });
     await recordSecurityEvent({
-      userId: user._id.toString(), type: "password_reset_requested", ip: input.ip, userAgent: input.userAgent,
+      userId: user._id.toString(),
+      type: "password_reset_requested",
+      ip: input.ip,
+      userAgent: input.userAgent,
     });
     return { emailSent: true };
   } catch (err) {
@@ -353,10 +397,12 @@ export async function requestPasswordReset(input: ForgotPasswordInput): Promise<
   }
 }
 
-export async function resetPassword(input: {
-  token: string;
-  newPassword: string;
-} & DeviceInfo): Promise<void> {
+export async function resetPassword(
+  input: {
+    token: string;
+    newPassword: string;
+  } & DeviceInfo
+): Promise<void> {
   const pwResult = validatePassword(input.newPassword);
   if (!pwResult.ok) throw AuthErrors.weakPassword(pwResult.error);
 
@@ -370,7 +416,8 @@ export async function resetPassword(input: {
   const sameAsOld = user.passwordHash
     ? await verifyPassword(user.passwordHash, input.newPassword)
     : false;
-  if (sameAsOld) throw AuthErrors.invalidInput("New password must be different from the current one.");
+  if (sameAsOld)
+    throw AuthErrors.invalidInput("New password must be different from the current one.");
 
   const passwordHash = await hashPassword(input.newPassword);
   user.passwordHash = passwordHash;
@@ -379,9 +426,14 @@ export async function resetPassword(input: {
 
   // A compromised session must not survive a password reset.
   await revokeAllSessionsForUser(user._id.toString());
-  await consumeVerificationTokenAllForKind(user._id.toString(), "password_reset").catch(() => undefined);
+  await consumeVerificationTokenAllForKind(user._id.toString(), "password_reset").catch(
+    () => undefined
+  );
   await recordSecurityEvent({
-    userId: user._id.toString(), type: "password_reset", ip: input.ip, userAgent: input.userAgent,
+    userId: user._id.toString(),
+    type: "password_reset",
+    ip: input.ip,
+    userAgent: input.userAgent,
   });
 
   await sendAuthEmail({
@@ -396,13 +448,15 @@ export async function resetPassword(input: {
 // Password change (authenticated)
 // ---------------------------------------------------------------------------
 
-export async function changePassword(input: {
-  userId: string;
-  currentPassword: string;
-  newPassword: string;
-  code?: string;
-  keepSessionToken?: string;
-} & DeviceInfo): Promise<void> {
+export async function changePassword(
+  input: {
+    userId: string;
+    currentPassword: string;
+    newPassword: string;
+    code?: string;
+    keepSessionToken?: string;
+  } & DeviceInfo
+): Promise<void> {
   const pwResult = validatePassword(input.newPassword);
   if (!pwResult.ok) throw AuthErrors.weakPassword(pwResult.error);
 
@@ -421,7 +475,8 @@ export async function changePassword(input: {
   }
 
   const sameAsOld = await verifyPassword(user.passwordHash, input.newPassword);
-  if (sameAsOld) throw AuthErrors.invalidInput("New password must be different from the current one.");
+  if (sameAsOld)
+    throw AuthErrors.invalidInput("New password must be different from the current one.");
 
   const passwordHash = await hashPassword(input.newPassword);
   user.passwordHash = passwordHash;
@@ -430,7 +485,10 @@ export async function changePassword(input: {
   // Keep the current session, kill everything else.
   await revokeAllSessionsForUser(user._id.toString(), input.keepSessionToken);
   await recordSecurityEvent({
-    userId: user._id.toString(), type: "password_changed", ip: input.ip, userAgent: input.userAgent,
+    userId: user._id.toString(),
+    type: "password_changed",
+    ip: input.ip,
+    userAgent: input.userAgent,
   });
 
   await sendAuthEmail({
@@ -457,14 +515,19 @@ export interface BeginTwoFactorResult {
 
 const TWO_FACTOR_SETUP_TTL_MS = 15 * 60 * 1000;
 
-export async function beginTwoFactorSetup(input: BeginTwoFactorInput): Promise<BeginTwoFactorResult> {
+export async function beginTwoFactorSetup(
+  input: BeginTwoFactorInput
+): Promise<BeginTwoFactorResult> {
   await connectDB();
   const user = await User.findById(input.userId);
   if (!user) throw AuthErrors.invalidCredentials();
 
   const result = await start2fa(user);
   await recordSecurityEvent({
-    userId: user._id.toString(), type: "two_factor_setup_started", ip: input.ip, userAgent: input.userAgent,
+    userId: user._id.toString(),
+    type: "two_factor_setup_started",
+    ip: input.ip,
+    userAgent: input.userAgent,
   });
   return {
     ...result,
@@ -487,7 +550,10 @@ export async function confirmTwoFactorSetup(input: ConfirmTwoFactorInput): Promi
   // Setup under way > 15 minutes is rejected by confirm2fa via token freshness
   // (the secret is the same; callers control the UI flow). Send notification.
   await recordSecurityEvent({
-    userId: user._id.toString(), type: "two_factor_enabled", ip: input.ip, userAgent: input.userAgent,
+    userId: user._id.toString(),
+    type: "two_factor_enabled",
+    ip: input.ip,
+    userAgent: input.userAgent,
   });
   await sendAuthEmail({
     to: user.email!,
@@ -528,7 +594,10 @@ export async function disableTwoFactor(input: DisableTwoFactorInput): Promise<Pu
 
   await disable2fa(user);
   await recordSecurityEvent({
-    userId: user._id.toString(), type: "two_factor_disabled", ip: input.ip, userAgent: input.userAgent,
+    userId: user._id.toString(),
+    type: "two_factor_disabled",
+    ip: input.ip,
+    userAgent: input.userAgent,
   });
   await sendAuthEmail({
     to: user.email!,

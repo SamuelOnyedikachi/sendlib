@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
 import { requireAuthUser } from "@/lib/auth";
 import { initializePaystackTransaction } from "@/lib/paystack";
+import { NextRequest, NextResponse } from "next/server";
 
 interface PaystackErrorResponse {
   response?: {
@@ -15,13 +15,18 @@ export async function POST(req: NextRequest) {
     const authUser = await requireAuthUser(req);
     if (!authUser.email) {
       return NextResponse.json(
-        { success: false, message: "Your account does not have an email address associated with it." },
+        {
+          success: false,
+          message: "Your account does not have an email address associated with it.",
+        },
         { status: 400 }
       );
     }
 
     const requestHost = req.headers.get("host") || "localhost:3000";
-    const protocol = req.headers.get("x-forwarded-proto") || (requestHost.includes("localhost") ? "http" : "https");
+    const protocol =
+      req.headers.get("x-forwarded-proto") ||
+      (requestHost.includes("localhost") ? "http" : "https");
     const requestOrigin = `${protocol}://${requestHost}`;
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL;
@@ -53,7 +58,8 @@ export async function POST(req: NextRequest) {
 
     console.error("Paystack checkout error:", paystackErr || errorMessage);
 
-    const errorDetail = typeof paystackErr === "object" ? JSON.stringify(paystackErr) : (paystackErr || errorMessage);
+    const errorDetail =
+      typeof paystackErr === "object" ? JSON.stringify(paystackErr) : paystackErr || errorMessage;
     return NextResponse.json(
       {
         success: false,

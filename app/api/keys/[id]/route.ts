@@ -1,13 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
 import { requireAuthUser } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import ApiKey from "@/models/ApiKey";
 import mongoose from "mongoose";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await requireAuthUser(req);
     const { id } = await params;
@@ -36,10 +33,7 @@ export async function DELETE(
   }
 }
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await requireAuthUser(req);
     const { id } = await params;
@@ -73,7 +67,10 @@ export async function PATCH(
     }
 
     if (key.revoked) {
-      return NextResponse.json({ success: false, message: "Cannot edit a revoked API key" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "Cannot edit a revoked API key" },
+        { status: 400 }
+      );
     }
 
     if (body.name !== undefined) {
@@ -84,12 +81,13 @@ export async function PATCH(
     if (body.allowedOrigins !== undefined) {
       const rawAllowedOrigins = Array.isArray(body.allowedOrigins) ? body.allowedOrigins : [];
       const allowedOrigins = rawAllowedOrigins
-        .map((o: unknown) =>
-          String(o)
-            .trim()
-            .toLowerCase()
-            .replace(/^(https?:\/\/)/, "")
-            .split("/")[0]
+        .map(
+          (o: unknown) =>
+            String(o)
+              .trim()
+              .toLowerCase()
+              .replace(/^(https?:\/\/)/, "")
+              .split("/")[0]
         )
         .filter((o: string) => o.length > 0 && o.length <= 253);
 

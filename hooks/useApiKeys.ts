@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 
 export interface ApiKey {
@@ -27,7 +27,10 @@ export function useGenerateApiKey() {
     mutationFn: async (params: { name?: string; allowedOrigins?: string[] }) => {
       const res = await api.post<
         never,
-        { success: boolean; data: { key: string; id: string; prefix: string; name: string; allowedOrigins: string[] } }
+        {
+          success: boolean;
+          data: { key: string; id: string; prefix: string; name: string; allowedOrigins: string[] };
+        }
       >("/keys", params);
       return res.data;
     },
@@ -64,11 +67,15 @@ export function useRevokeApiKey() {
 export function useUpdateApiKey() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, allowedOrigins, name }: { id: string; allowedOrigins?: string[]; name?: string }) => {
-      const res = await api.patch<
-        never,
-        { success: boolean; message: string; data: ApiKey }
-      >(`/keys/${id}`, { allowedOrigins, name });
+    mutationFn: async ({
+      id,
+      allowedOrigins,
+      name,
+    }: { id: string; allowedOrigins?: string[]; name?: string }) => {
+      const res = await api.patch<never, { success: boolean; message: string; data: ApiKey }>(
+        `/keys/${id}`,
+        { allowedOrigins, name }
+      );
       return res.data;
     },
     onSuccess: () => {
@@ -76,4 +83,3 @@ export function useUpdateApiKey() {
     },
   });
 }
-

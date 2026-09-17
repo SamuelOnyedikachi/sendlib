@@ -1,8 +1,29 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { DebugPipeline } from "@/components/debugger/DebugPipeline";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import { useMe } from "@/hooks/useAuth";
+import { useInspectEmail } from "@/hooks/useDebugger";
+import { useGmailAccounts } from "@/hooks/useGmailAccounts";
+import {
+  type EmailTemplate,
+  type TemplateCategory,
+  useDeleteTemplate,
+  useResetTemplate,
+  useRestoreDefaultTemplates,
+  useSaveTemplate,
+  useTemplates,
+} from "@/hooks/useTemplates";
 import {
   ArrowLeft01Icon,
   Copy01Icon,
@@ -12,30 +33,9 @@ import {
   PlusSignIcon,
   SearchVisualIcon,
 } from "@hugeicons/core-free-icons";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  useTemplates,
-  useSaveTemplate,
-  useDeleteTemplate,
-  useResetTemplate,
-  useRestoreDefaultTemplates,
-  type EmailTemplate,
-  type TemplateCategory,
-} from "@/hooks/useTemplates";
-import { useInspectEmail } from "@/hooks/useDebugger";
-import { useMe } from "@/hooks/useAuth";
-import { useGmailAccounts } from "@/hooks/useGmailAccounts";
-import { DebugPipeline } from "@/components/debugger/DebugPipeline";
+import { HugeiconsIcon } from "@hugeicons/react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 const CATEGORY_LABEL: Record<TemplateCategory, string> = {
@@ -102,8 +102,7 @@ export default function TemplatesPage() {
   const { mutate: save, isPending: isSaving } = useSaveTemplate();
   const { mutate: remove, isPending: isDeleting } = useDeleteTemplate();
   const { mutate: resetTpl, isPending: isResetting } = useResetTemplate();
-  const { mutate: restoreDefaults, isPending: isRestoring } =
-    useRestoreDefaultTemplates();
+  const { mutate: restoreDefaults, isPending: isRestoring } = useRestoreDefaultTemplates();
   const inspect = useInspectEmail();
   const { data: user } = useMe();
   const { data: gmailAccounts } = useGmailAccounts();
@@ -115,17 +114,13 @@ export default function TemplatesPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [testTo, setTestTo] = useState("");
 
-  const vars = useMemo(
-    () => (draft ? extractVars(draft.subject, draft.html) : []),
-    [draft],
-  );
+  const vars = useMemo(() => (draft ? extractVars(draft.subject, draft.html) : []), [draft]);
 
   const previewData = useMemo(() => {
     const defaults = samplesFor(vars);
     const out = { ...defaults };
     for (const key of vars) {
-      if (sample[key] !== undefined && sample[key] !== "")
-        out[key] = sample[key];
+      if (sample[key] !== undefined && sample[key] !== "") out[key] = sample[key];
     }
     return out;
   }, [vars, sample]);
@@ -147,9 +142,7 @@ export default function TemplatesPage() {
     });
   }, [draft, vars]);
 
-  const filtered = (templates ?? []).filter(
-    (t) => filter === "all" || t.category === filter,
-  );
+  const filtered = (templates ?? []).filter((t) => filter === "all" || t.category === filter);
 
   const openTemplate = (t: EmailTemplate) => {
     const nextDraft = {
@@ -190,12 +183,7 @@ export default function TemplatesPage() {
 
   const handleSave = () => {
     if (!draft) return;
-    if (
-      !draft.name.trim() ||
-      !draft.slug.trim() ||
-      !draft.subject.trim() ||
-      !draft.html.trim()
-    ) {
+    if (!draft.name.trim() || !draft.slug.trim() || !draft.subject.trim() || !draft.html.trim()) {
       toast.error("Name, slug, subject, and HTML are required.");
       return;
     }
@@ -221,11 +209,8 @@ export default function TemplatesPage() {
             isDefault: saved.isDefault,
           });
         },
-        onError: (err) =>
-          toast.error(
-            typeof err === "string" ? err : "Could not save template.",
-          ),
-      },
+        onError: (err) => toast.error(typeof err === "string" ? err : "Could not save template."),
+      }
     );
   };
 
@@ -273,10 +258,7 @@ export default function TemplatesPage() {
                       toast.success("Reset to starter copy.");
                       openTemplate(t);
                     },
-                    onError: (err) =>
-                      toast.error(
-                        typeof err === "string" ? err : "Reset failed.",
-                      ),
+                    onError: (err) => toast.error(typeof err === "string" ? err : "Reset failed."),
                   })
                 }
               >
@@ -315,7 +297,7 @@ export default function TemplatesPage() {
                                   .replace(/[^a-z0-9]+/g, "-")
                                   .replace(/^-|-$/g, ""),
                           }
-                        : d,
+                        : d
                     );
                   }}
                   placeholder="Reset Password"
@@ -326,9 +308,7 @@ export default function TemplatesPage() {
                 <Input
                   value={draft.slug}
                   onChange={(e) =>
-                    setDraft((d) =>
-                      d ? { ...d, slug: e.target.value.toLowerCase() } : d,
-                    )
+                    setDraft((d) => (d ? { ...d, slug: e.target.value.toLowerCase() } : d))
                   }
                   placeholder="password-reset"
                   className="h-9 bg-surface-container-low border-outline-variant font-mono text-xs"
@@ -338,9 +318,7 @@ export default function TemplatesPage() {
             <Field label="Subject">
               <Input
                 value={draft.subject}
-                onChange={(e) =>
-                  setDraft((d) => (d ? { ...d, subject: e.target.value } : d))
-                }
+                onChange={(e) => setDraft((d) => (d ? { ...d, subject: e.target.value } : d))}
                 placeholder="Reset your password"
                 className="h-9 bg-surface-container-low border-outline-variant"
               />
@@ -348,9 +326,7 @@ export default function TemplatesPage() {
             <Field label="HTML">
               <Textarea
                 value={draft.html}
-                onChange={(e) =>
-                  setDraft((d) => (d ? { ...d, html: e.target.value } : d))
-                }
+                onChange={(e) => setDraft((d) => (d ? { ...d, html: e.target.value } : d))}
                 className="min-h-[280px] font-mono text-xs bg-surface-container-low border-outline-variant leading-relaxed"
               />
             </Field>
@@ -365,9 +341,7 @@ export default function TemplatesPage() {
                       <span className="text-[10px] font-mono text-secondary">{`{{${key}}}`}</span>
                       <Input
                         value={previewData[key] ?? ""}
-                        onChange={(e) =>
-                          setSample((s) => ({ ...s, [key]: e.target.value }))
-                        }
+                        onChange={(e) => setSample((s) => ({ ...s, [key]: e.target.value }))}
                         className="h-8 bg-surface-container-low border-outline-variant text-xs"
                       />
                     </label>
@@ -438,8 +412,7 @@ export default function TemplatesPage() {
                   Debugger
                 </p>
                 <p className="text-[11px] text-secondary mt-0.5 leading-relaxed">
-                  Sends this preview through your connected Gmail and traces
-                  every step.
+                  Sends this preview through your connected Gmail and traces every step.
                 </p>
               </div>
               <label className="block space-y-1.5">
@@ -456,11 +429,7 @@ export default function TemplatesPage() {
               </label>
               <Button
                 className="w-full h-8 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-black font-bold border-0 text-xs"
-                disabled={
-                  inspect.isPending ||
-                  !draft.subject.trim() ||
-                  !draft.html.trim()
-                }
+                disabled={inspect.isPending || !draft.subject.trim() || !draft.html.trim()}
                 onClick={() => {
                   const to = testTo.trim() || user?.email || connectedFrom;
                   if (!connectedFrom) {
@@ -486,24 +455,18 @@ export default function TemplatesPage() {
                         if (result.sent) {
                           toast.success(`Test sent to ${to}.`);
                         } else {
-                          toast.error(
-                            result.message || "Gmail did not accept the test.",
-                          );
+                          toast.error(result.message || "Gmail did not accept the test.");
                         }
                       },
                       onError: (err) =>
-                        toast.error(
-                          typeof err === "string" ? err : "Test send failed.",
-                        ),
-                    },
+                        toast.error(typeof err === "string" ? err : "Test send failed."),
+                    }
                   );
                 }}
               >
                 {inspect.isPending ? "Sending…" : "Run debugger"}
               </Button>
-              {inspect.data?.debug ? (
-                <DebugPipeline report={inspect.data.debug} />
-              ) : null}
+              {inspect.data?.debug ? <DebugPipeline report={inspect.data.debug} /> : null}
             </div>
           </div>
         </div>
@@ -519,8 +482,7 @@ export default function TemplatesPage() {
             Templates
           </h1>
           <p className="text-secondary font-body-md mt-1">
-            Build once. Send with a slug and{" "}
-            <code className="font-mono text-xs">data</code>.
+            Build once. Send with a slug and <code className="font-mono text-xs">data</code>.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -535,12 +497,9 @@ export default function TemplatesPage() {
                   toast.success(
                     res.restored
                       ? `Restored ${res.restored} starter template${res.restored === 1 ? "" : "s"}.`
-                      : "All starter templates are already present.",
+                      : "All starter templates are already present."
                   ),
-                onError: (err) =>
-                  toast.error(
-                    typeof err === "string" ? err : "Restore failed.",
-                  ),
+                onError: (err) => toast.error(typeof err === "string" ? err : "Restore failed."),
               })
             }
           >
@@ -564,31 +523,26 @@ export default function TemplatesPage() {
       </div>
 
       <div className="flex flex-wrap gap-1.5">
-        {(["all", "auth", "billing", "account", "custom"] as const).map(
-          (key) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setFilter(key)}
-              className={`h-7 px-2.5 rounded-md text-xs font-semibold transition-colors ${
-                filter === key
-                  ? "bg-surface-container text-primary-sendlib"
-                  : "text-secondary hover:text-on-background hover:bg-surface-container-low"
-              }`}
-            >
-              {key === "all" ? "All" : CATEGORY_LABEL[key]}
-            </button>
-          ),
-        )}
+        {(["all", "auth", "billing", "account", "custom"] as const).map((key) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setFilter(key)}
+            className={`h-7 px-2.5 rounded-md text-xs font-semibold transition-colors ${
+              filter === key
+                ? "bg-surface-container text-primary-sendlib"
+                : "text-secondary hover:text-on-background hover:bg-surface-container-low"
+            }`}
+          >
+            {key === "all" ? "All" : CATEGORY_LABEL[key]}
+          </button>
+        ))}
       </div>
 
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton
-              key={i}
-              className="h-[124px] rounded-xl bg-outline-variant/10"
-            />
+            <Skeleton key={i} className="h-[124px] rounded-xl bg-outline-variant/10" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
@@ -600,12 +554,9 @@ export default function TemplatesPage() {
             strokeWidth={1.5}
             className="mx-auto text-secondary/50 mb-3"
           />
-          <h3 className="text-base font-bold text-primary-sendlib">
-            No templates here
-          </h3>
+          <h3 className="text-base font-bold text-primary-sendlib">No templates here</h3>
           <p className="text-xs text-secondary mt-1 mx-auto w-full">
-            Starters cover welcome, OTP, invoices, and more. Create a custom one
-            anytime.
+            Starters cover welcome, OTP, invoices, and more. Create a custom one anytime.
           </p>
         </div>
       ) : (
@@ -630,12 +581,8 @@ export default function TemplatesPage() {
                   {CATEGORY_LABEL[t.category]}
                 </span>
               </div>
-              <h3 className="mt-3 text-sm font-bold text-primary-sendlib truncate">
-                {t.name}
-              </h3>
-              <p className="text-[11px] font-mono text-secondary mt-0.5">
-                {t.slug}
-              </p>
+              <h3 className="mt-3 text-sm font-bold text-primary-sendlib truncate">{t.name}</h3>
+              <p className="text-[11px] font-mono text-secondary mt-0.5">{t.slug}</p>
               <p className="text-xs text-secondary mt-2 line-clamp-2 leading-relaxed">
                 {t.description || t.subject}
               </p>
@@ -670,12 +617,7 @@ export default function TemplatesPage() {
       )}
 
       <p className="text-xs text-secondary flex items-center gap-1.5">
-        <HugeiconsIcon
-          icon={SearchVisualIcon}
-          size={13}
-          color="currentColor"
-          strokeWidth={1.5}
-        />
+        <HugeiconsIcon icon={SearchVisualIcon} size={13} color="currentColor" strokeWidth={1.5} />
         After you send, open{" "}
         <Link
           href="/dashboard/debugger"
@@ -714,10 +656,7 @@ export default function TemplatesPage() {
                     toast.success("Template deleted.");
                     setDeleteId(null);
                   },
-                  onError: (err) =>
-                    toast.error(
-                      typeof err === "string" ? err : "Delete failed.",
-                    ),
+                  onError: (err) => toast.error(typeof err === "string" ? err : "Delete failed."),
                 });
               }}
             >

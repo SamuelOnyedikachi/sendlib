@@ -1,6 +1,10 @@
-import axios from "@/lib/axios";
 import crypto from "crypto";
-import { InitializeTransactionOptions, PaystackInitResponse, PaystackVerifyResponse } from "./types";
+import axios from "@/lib/axios";
+import {
+  InitializeTransactionOptions,
+  PaystackInitResponse,
+  PaystackVerifyResponse,
+} from "./types";
 
 const PAYSTACK_BASE_URL = "https://api.paystack.co";
 
@@ -99,10 +103,7 @@ export function verifyPaystackSignature(
     const secret = (secretKey || process.env.PAYSTACK_SECRET_KEY || "").trim();
     if (!secret || !signatureHeader) return false;
 
-    const hash = crypto
-      .createHmac("sha512", secret)
-      .update(rawBody, "utf8")
-      .digest("hex");
+    const hash = crypto.createHmac("sha512", secret).update(rawBody, "utf8").digest("hex");
 
     if (hash.length !== signatureHeader.trim().length) return false;
 

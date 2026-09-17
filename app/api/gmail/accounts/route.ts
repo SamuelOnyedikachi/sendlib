@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
 import { requireAuthUser } from "@/lib/auth";
+import axios from "@/lib/axios";
 import { connectDB } from "@/lib/db";
 import { decrypt } from "@/lib/encryption";
-import axios from "@/lib/axios";
-import GmailAccount from "@/models/GmailAccount";
 import EmailLog from "@/models/EmailLog";
+import GmailAccount from "@/models/GmailAccount";
 import mongoose from "mongoose";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   try {
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: accounts.map(account => ({
+      data: accounts.map((account) => ({
         id: account._id,
         email: account.gmailEmail,
         connected: account.connected,
@@ -43,25 +43,28 @@ export async function DELETE(req: NextRequest) {
     await connectDB();
 
     if (email) {
-      const account = await GmailAccount.findOne({ 
+      const account = await GmailAccount.findOne({
         userId: new mongoose.Types.ObjectId(user.id),
-        gmailEmail: email
+        gmailEmail: email,
       }).lean();
 
       if (!account) {
-        return NextResponse.json({ success: false, message: "Gmail account not found" }, { status: 404 });
+        return NextResponse.json(
+          { success: false, message: "Gmail account not found" },
+          { status: 404 }
+        );
       }
 
       try {
         const refreshToken = decrypt(account.encryptedRefreshToken);
         await axios.post("https://oauth2.googleapis.com/revoke", `token=${refreshToken}`, {
-          headers: { "Content-Type": "application/x-www-form-urlencoded" }
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
         });
       } catch {
         try {
           const accessToken = decrypt(account.encryptedAccessToken);
           await axios.post("https://oauth2.googleapis.com/revoke", `token=${accessToken}`, {
-            headers: { "Content-Type": "application/x-www-form-urlencoded" }
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
           });
         } catch {}
       }
@@ -72,27 +75,32 @@ export async function DELETE(req: NextRequest) {
       ]);
     } else {
       // Fallback: Disconnect all if no email specified
-      const accounts = await GmailAccount.find({ userId: new mongoose.Types.ObjectId(user.id) }).lean();
+      const accounts = await GmailAccount.find({
+        userId: new mongoose.Types.ObjectId(user.id),
+      }).lean();
       for (const account of accounts) {
         try {
           const refreshToken = decrypt(account.encryptedRefreshToken);
           await axios.post("https://oauth2.googleapis.com/revoke", `token=${refreshToken}`, {
-            headers: { "Content-Type": "application/x-www-form-urlencoded" }
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
           });
         } catch {
           try {
             const accessToken = decrypt(account.encryptedAccessToken);
             await axios.post("https://oauth2.googleapis.com/revoke", `token=${accessToken}`, {
-              headers: { "Content-Type": "application/x-www-form-urlencoded" }
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
             });
           } catch {}
         }
       }
-      
-      const emails = accounts.map(a => a.gmailEmail);
+
+      const emails = accounts.map((a) => a.gmailEmail);
       await Promise.all([
         GmailAccount.deleteMany({ userId: new mongoose.Types.ObjectId(user.id) }),
-        EmailLog.deleteMany({ userId: new mongoose.Types.ObjectId(user.id), from: { $in: emails } }),
+        EmailLog.deleteMany({
+          userId: new mongoose.Types.ObjectId(user.id),
+          from: { $in: emails },
+        }),
       ]);
     }
 

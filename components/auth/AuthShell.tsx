@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import SEO from "@/components/SEO";
+import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import Link from "next/link";
 
 interface AuthShellProps {
   title: string;
@@ -30,7 +30,9 @@ export default function AuthShell({ title, subtitle, backHref = "/", children }:
 
           <div className="w-full max-w-[440px] mx-auto my-auto py-2">
             <div className="space-y-1 mb-4">
-              <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-primary-sendlib">{title}</h1>
+              <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-primary-sendlib">
+                {title}
+              </h1>
               <p className="text-xs sm:text-sm text-secondary leading-relaxed">{subtitle}</p>
             </div>
             {children}
@@ -62,7 +64,8 @@ export default function AuthShell({ title, subtitle, backHref = "/", children }:
               Stop fighting SMTP configuration.
             </h2>
             <p className="text-sm lg:text-base text-white/80 mt-2 leading-relaxed">
-              A secure API designed for developers to send transactional emails instantly to their customers.
+              A secure API designed for developers to send transactional emails instantly to their
+              customers.
             </p>
           </div>
         </div>

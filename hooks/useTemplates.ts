@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 
 export type TemplateCategory = "auth" | "billing" | "account" | "custom";
@@ -45,7 +45,10 @@ export function useSaveTemplate() {
         );
         return res.data;
       }
-      const res = await api.post<never, { success: boolean; data: EmailTemplate }>("/templates", params);
+      const res = await api.post<never, { success: boolean; data: EmailTemplate }>(
+        "/templates",
+        params
+      );
       return res.data;
     },
     onSuccess: () => {
@@ -58,9 +61,12 @@ export function useResetTemplate() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const res = await api.patch<never, { success: boolean; data: EmailTemplate }>(`/templates/${id}`, {
-        reset: true,
-      });
+      const res = await api.patch<never, { success: boolean; data: EmailTemplate }>(
+        `/templates/${id}`,
+        {
+          reset: true,
+        }
+      );
       return res.data;
     },
     onSuccess: () => {

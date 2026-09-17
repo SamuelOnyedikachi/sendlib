@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { rateLimit } from "@/lib/rateLimit";
+import { authErrorResponse, getDeviceInfo, parseJsonBody } from "@/lib/auth/handlers";
 import { requestPasswordReset } from "@/lib/auth/service";
-import { getDeviceInfo, authErrorResponse, parseJsonBody } from "@/lib/auth/handlers";
+import { rateLimit } from "@/lib/rateLimit";
+import { NextRequest, NextResponse } from "next/server";
 
 const GENERIC_MESSAGE =
   "If an account exists for this email, you'll receive a password reset link.";

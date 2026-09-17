@@ -1,17 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
-import { connectDB } from "@/lib/db";
 import { enqueueBatchJob } from "@/lib/batchWorker";
+import { connectDB } from "@/lib/db";
+import { getEffectiveUserPlan } from "@/lib/paystack";
+import { rateLimit } from "@/lib/rateLimit";
 import ApiKey, { IApiKey } from "@/models/ApiKey";
-import User from "@/models/User";
 import BatchJob from "@/models/BatchJob";
-import GmailAccount from "@/models/GmailAccount";
 import EmailLog from "@/models/EmailLog";
+import GmailAccount from "@/models/GmailAccount";
+import User from "@/models/User";
 import argon2 from "argon2";
 import mongoose from "mongoose";
-import { rateLimit } from "@/lib/rateLimit";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getEffectiveUserPlan } from "@/lib/paystack";
-
 
 const MAX_SUBJECT_LENGTH = 998;
 const MAX_HTML_BYTES = 5 * 1024 * 1024;
@@ -20,8 +19,7 @@ const MAX_TEXT_BYTES = 2 * 1024 * 1024;
 function getMaxRecipients(fromEmail: string): number {
   // Workspace accounts get 2,000/day from Google; personal Gmail gets 500/day.
   // We cap personal at 450 so users have 50 left over for password resets, etc.
-  const isWorkspace =
-    !fromEmail.endsWith("@gmail.com") && !fromEmail.endsWith("@googlemail.com");
+  const isWorkspace = !fromEmail.endsWith("@gmail.com") && !fromEmail.endsWith("@googlemail.com");
   return isWorkspace ? 2000 : 450;
 }
 
@@ -33,9 +31,7 @@ const RecipientSchema = z.object({
 const BatchRequestSchema = z.object({
   from: z.string().min(1, "The 'from' field is required."),
   subject: z.string().min(1, "The 'subject' field is required.").max(MAX_SUBJECT_LENGTH),
-  recipients: z
-    .array(RecipientSchema)
-    .min(1, "At least one recipient is required."),
+  recipients: z.array(RecipientSchema).min(1, "At least one recipient is required."),
   html: z.string().optional(),
   text: z.string().optional(),
   replyTo: z.string().email().optional(),
@@ -70,12 +66,14 @@ async function authenticateApiKey(rawKey: string): Promise<{
 export async function POST(req: NextRequest) {
   try {
     const rawKey =
-      req.headers.get("x-api-key") ??
-      req.headers.get("authorization")?.replace(/^bearer\s+/i, "");
+      req.headers.get("x-api-key") ?? req.headers.get("authorization")?.replace(/^bearer\s+/i, "");
 
     if (!rawKey) {
       return NextResponse.json(
-        { success: false, message: "API key required. Pass it in the x-api-key header or as a Bearer token." },
+        {
+          success: false,
+          message: "API key required. Pass it in the x-api-key header or as a Bearer token.",
+        },
         { status: 401 }
       );
     }
@@ -95,7 +93,10 @@ export async function POST(req: NextRequest) {
     // Load user and enforce Pro-only
     const user = await User.findById(userId).lean();
     if (!user) {
-      return NextResponse.json({ success: false, message: "User account not found." }, { status: 404 });
+      return NextResponse.json(
+        { success: false, message: "User account not found." },
+        { status: 404 }
+      );
     }
 
     if (getEffectiveUserPlan(user) !== "pro") {
@@ -138,11 +139,10 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) {
       const first = parsed.error.issues[0];
       const path = first.path.join(".");
-      const msg = path ? `Invalid input for '${path}': ${first.message}` : `Invalid input: ${first.message}`;
-      return NextResponse.json(
-        { success: false, message: msg },
-        { status: 400 }
-      );
+      const msg = path
+        ? `Invalid input for '${path}': ${first.message}`
+        : `Invalid input: ${first.message}`;
+      return NextResponse.json({ success: false, message: msg }, { status: 400 });
     }
 
     const { from, subject, recipients, html, text, replyTo } = parsed.data;
@@ -150,18 +150,24 @@ export async function POST(req: NextRequest) {
     // Extract raw email from "Display Name <email>" format if needed
     const fromEmailMatch = from.match(/<([^>]+)>/) ?? null;
     const fromEmail = fromEmailMatch ? fromEmailMatch[1].trim() : from.trim();
-    
+
     // Synchronous validation: ensure the Gmail account exists and is connected
     const account = await GmailAccount.findOne({ userId, gmailEmail: fromEmail });
     if (!account) {
       return NextResponse.json(
-        { success: false, message: `Gmail account '${fromEmail}' is not connected. Please go to your Sendlib dashboard, connect this Gmail account, and try again.` },
+        {
+          success: false,
+          message: `Gmail account '${fromEmail}' is not connected. Please go to your Sendlib dashboard, connect this Gmail account, and try again.`,
+        },
         { status: 400 }
       );
     }
     if (!account.connected) {
       return NextResponse.json(
-        { success: false, message: `Gmail account '${fromEmail}' is disconnected. Please reconnect it from your dashboard.` },
+        {
+          success: false,
+          message: `Gmail account '${fromEmail}' is disconnected. Please reconnect it from your dashboard.`,
+        },
         { status: 400 }
       );
     }
@@ -173,7 +179,7 @@ export async function POST(req: NextRequest) {
     // if the batch exceeds this, because the worker handles drip-campaign pausing).
     const startOfToday = new Date();
     startOfToday.setUTCHours(0, 0, 0, 0);
-    
+
     // We put a hard ceiling of 5,000 recipients per batch just to prevent
     // absolutely massive JSON payloads and DB documents.
     if (recipients.length > 5000) {

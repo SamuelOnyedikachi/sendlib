@@ -38,6 +38,7 @@ const EmailTemplateSchema = new Schema<IEmailTemplate>(
 EmailTemplateSchema.index({ userId: 1, slug: 1 }, { unique: true });
 
 const EmailTemplate: Model<IEmailTemplate> =
-  mongoose.models.EmailTemplate ?? mongoose.model<IEmailTemplate>("EmailTemplate", EmailTemplateSchema);
+  mongoose.models.EmailTemplate ??
+  mongoose.model<IEmailTemplate>("EmailTemplate", EmailTemplateSchema);
 
 export default EmailTemplate;

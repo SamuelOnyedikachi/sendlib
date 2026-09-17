@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "../lib/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { api } from "../lib/api";
 
 export interface GmailAccount {
   id: string;
@@ -14,7 +14,9 @@ export function useGmailAccounts() {
   return useQuery({
     queryKey: ["gmail-accounts"],
     queryFn: async () => {
-      const res = await api.get<never, { success: boolean; data: GmailAccount[] }>("/gmail/accounts");
+      const res = await api.get<never, { success: boolean; data: GmailAccount[] }>(
+        "/gmail/accounts"
+      );
       return res.data;
     },
   });
@@ -27,7 +29,10 @@ export function useConnectGmail() {
       window.location.href = res.url;
     },
     onError: (err: unknown) => {
-      const msg = typeof err === "string" ? err : (err as Error)?.message || "Failed to connect Gmail account.";
+      const msg =
+        typeof err === "string"
+          ? err
+          : (err as Error)?.message || "Failed to connect Gmail account.";
       toast.error(msg, { id: "gmail-connect" });
     },
   });
@@ -37,7 +42,9 @@ export function useDisconnectGmail() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (email?: string) => {
-      await api.delete(email ? `/gmail/accounts?email=${encodeURIComponent(email)}` : "/gmail/accounts");
+      await api.delete(
+        email ? `/gmail/accounts?email=${encodeURIComponent(email)}` : "/gmail/accounts"
+      );
     },
     onMutate: async (email?: string) => {
       await queryClient.cancelQueries({ queryKey: ["gmail-accounts"] });

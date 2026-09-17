@@ -86,7 +86,7 @@ async function redisCheck(key: string, limit: number): Promise<ThrottleStatus> {
   const client = connectToRedis();
   const [count, ttl] = (await Promise.all([client.get(key), client.ttl(key)])) as [
     string | null,
-    number
+    number,
   ];
   const current = count ? Number(count) : 0;
   return {
@@ -164,7 +164,10 @@ export async function clearLoginFailures(email: string, ip: string): Promise<voi
 
 // ---------- Generic counter (used for 2FA attempts) ----------
 /** Per-key counter used by 2FA attempt limiting (separate from login throttle). */
-export async function incrementAndCheckAttempt(key: string, limit: number): Promise<ThrottleStatus> {
+export async function incrementAndCheckAttempt(
+  key: string,
+  limit: number
+): Promise<ThrottleStatus> {
   const fullKey = `auth_fail_generic_${shaKey(key)}`;
   if (redisAvailable()) {
     try {

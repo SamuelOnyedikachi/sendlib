@@ -24,8 +24,8 @@ export function generateTotpSecret(byteLength = 20): string {
 
 function hexToInt(input: string): number {
   // Uint32 view of the first 8 hex chars; avoids BigInt by splitting.
-  const hi = parseInt(input.slice(0, 8), 16) >>> 0;
-  const lo = parseInt(input.slice(8, 16), 16) >>> 0;
+  const hi = Number.parseInt(input.slice(0, 8), 16) >>> 0;
+  const lo = Number.parseInt(input.slice(8, 16), 16) >>> 0;
   // Combine into a single number using the low 32 bits (safe up to 2^53).
   return hi * 0x100000000 + lo;
 }

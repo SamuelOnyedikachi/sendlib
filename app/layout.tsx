@@ -1,6 +1,6 @@
+import { ReactQueryProvider } from "@/components/providers/query-provider";
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import { ReactQueryProvider } from "@/components/providers/query-provider";
 import { Toaster } from "sonner";
 import siteMetadata from "../utils/siteMetaData";
 import "./globals.css";
@@ -48,7 +48,10 @@ export const metadata: Metadata = {
     description: siteMetadata.description,
   },
   verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || process.env.GOOGLE_SITE_VERIFICATION || "",
+    google:
+      process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ||
+      process.env.GOOGLE_SITE_VERIFICATION ||
+      "",
   },
 };
 

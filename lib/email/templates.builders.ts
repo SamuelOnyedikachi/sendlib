@@ -1,10 +1,4 @@
-import {
-  renderAuthEmail,
-  row,
-  paragraph,
-  bulletList,
-  appBaseUrl,
-} from "./templates";
+import { appBaseUrl, bulletList, paragraph, renderAuthEmail, row } from "./templates";
 
 /** "24 hours", "30 minutes" etc. shown in emails. */
 export function formatExpiryLabel(ms: number): string {
@@ -27,7 +21,11 @@ export function buildWelcomeEmailHtml(name: string): string {
         )
       ) +
       row(paragraph(`Next steps:`, { strong: true })) +
-      bulletList(["1. Connect your Gmail account", "2. Create an API key", "3. Send your first transactional email"]),
+      bulletList([
+        "1. Connect your Gmail account",
+        "2. Create an API key",
+        "3. Send your first transactional email",
+      ]),
     actionUrl: `${appBaseUrl()}/dashboard`,
     actionLabel: "Go to Dashboard",
     ignoreNote: "If you didn't create a Sendlib account, please ignore this email.",
@@ -52,7 +50,11 @@ export function buildVerifyEmailHtml(name: string, url: string, expiresInLabel: 
   });
 }
 
-export function buildResendVerificationEmailHtml(name: string, url: string, expiresInLabel: string): string {
+export function buildResendVerificationEmailHtml(
+  name: string,
+  url: string,
+  expiresInLabel: string
+): string {
   return renderAuthEmail({
     heading: "Verify your email address",
     preheader: "Here's a fresh verification link for your Sendlib account.",
@@ -69,7 +71,11 @@ export function buildResendVerificationEmailHtml(name: string, url: string, expi
   });
 }
 
-export function buildPasswordResetEmailHtml(name: string, url: string, expiresInLabel: string): string {
+export function buildPasswordResetEmailHtml(
+  name: string,
+  url: string,
+  expiresInLabel: string
+): string {
   return renderAuthEmail({
     heading: "Reset your password",
     preheader: "Use this link to set a new password for your Sendlib account.",

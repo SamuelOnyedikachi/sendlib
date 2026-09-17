@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { verifyEmail } from "@/lib/auth/service";
 import { authErrorResponse, parseJsonBody } from "@/lib/auth/handlers";
+import { verifyEmail } from "@/lib/auth/service";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {

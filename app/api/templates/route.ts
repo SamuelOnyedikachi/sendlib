@@ -1,15 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
 import { requireAuthUser } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import EmailTemplate, { IEmailTemplate } from "@/models/EmailTemplate";
-import {
-  DEFAULT_TEMPLATES,
-  extractVariables,
-  isValidSlug,
-  slugify,
-} from "@/lib/templates";
 import { getEffectiveUserPlan } from "@/lib/paystack";
+import { DEFAULT_TEMPLATES, extractVariables, isValidSlug, slugify } from "@/lib/templates";
+import EmailTemplate, { IEmailTemplate } from "@/models/EmailTemplate";
 import mongoose from "mongoose";
+import { NextRequest, NextResponse } from "next/server";
 
 const MAX_TEMPLATES_FREE = 20;
 const MAX_TEMPLATES_PRO = 200;
@@ -104,15 +99,22 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const name = String(body.name ?? "").trim().slice(0, 80);
+    const name = String(body.name ?? "")
+      .trim()
+      .slice(0, 80);
     if (!name) {
       return NextResponse.json({ success: false, message: "Name is required." }, { status: 400 });
     }
 
-    let slug = String(body.slug ?? slugify(name)).trim().toLowerCase();
+    const slug = String(body.slug ?? slugify(name))
+      .trim()
+      .toLowerCase();
     if (!isValidSlug(slug)) {
       return NextResponse.json(
-        { success: false, message: "Slug must be lowercase letters, numbers, and hyphens (e.g. password-reset)." },
+        {
+          success: false,
+          message: "Slug must be lowercase letters, numbers, and hyphens (e.g. password-reset).",
+        },
         { status: 400 }
       );
     }
@@ -120,17 +122,28 @@ export async function POST(req: NextRequest) {
     const subject = String(body.subject ?? "").trim();
     const html = String(body.html ?? "");
     if (!subject) {
-      return NextResponse.json({ success: false, message: "Subject is required." }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "Subject is required." },
+        { status: 400 }
+      );
     }
     if (!html.trim()) {
-      return NextResponse.json({ success: false, message: "HTML body is required." }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "HTML body is required." },
+        { status: 400 }
+      );
     }
     if (Buffer.byteLength(html, "utf8") > MAX_HTML_BYTES) {
-      return NextResponse.json({ success: false, message: "HTML is too large. Keep templates under 512 KB." }, { status: 413 });
+      return NextResponse.json(
+        { success: false, message: "HTML is too large. Keep templates under 512 KB." },
+        { status: 413 }
+      );
     }
 
     const User = (await import("@/models/User")).default;
-    const dbUser = await User.findById(user.id).select("plan currentPeriodEnd lastPaymentAt subscriptionStatus").lean();
+    const dbUser = await User.findById(user.id)
+      .select("plan currentPeriodEnd lastPaymentAt subscriptionStatus")
+      .lean();
     const effectivePlan = getEffectiveUserPlan(dbUser);
     const max = effectivePlan === "pro" ? MAX_TEMPLATES_PRO : MAX_TEMPLATES_FREE;
     const count = await EmailTemplate.countDocuments({ userId });
@@ -158,7 +171,9 @@ export async function POST(req: NextRequest) {
       slug,
       name,
       category: "custom",
-      description: String(body.description ?? "").trim().slice(0, 200),
+      description: String(body.description ?? "")
+        .trim()
+        .slice(0, 200),
       subject,
       html,
       variables,

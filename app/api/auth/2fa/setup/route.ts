@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
 import { requireAuthUser } from "@/lib/auth";
+import { authErrorResponse, getDeviceInfo } from "@/lib/auth/handlers";
 import { beginTwoFactorSetup } from "@/lib/auth/service";
-import { getDeviceInfo, authErrorResponse } from "@/lib/auth/handlers";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {

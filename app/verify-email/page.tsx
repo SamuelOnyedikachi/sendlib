@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { CheckmarkCircleIcon, Cancel01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { toast } from "sonner";
 import AuthShell from "@/components/auth/AuthShell";
-import { useVerifyEmail, useResendVerification, useMe } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { useMe, useResendVerification, useVerifyEmail } from "@/hooks/useAuth";
+import { Cancel01Icon, CheckmarkCircleIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 type VerifyState =
   | { status: "verifying" }
@@ -49,8 +49,7 @@ function VerifyEmailContent() {
           const code = (err as { code?: string }).code;
           setState({
             status: "error",
-            reason:
-              code === "expired" || code === "used" || code === "invalid" ? code : "unknown",
+            reason: code === "expired" || code === "used" || code === "invalid" ? code : "unknown",
             message,
           });
         },
@@ -90,7 +89,11 @@ function VerifyEmailContent() {
 
         {state.status === "verified" && (
           <>
-            <HugeiconsIcon icon={CheckmarkCircleIcon} size={48} className="mx-auto text-emerald-400" />
+            <HugeiconsIcon
+              icon={CheckmarkCircleIcon}
+              size={48}
+              className="mx-auto text-emerald-400"
+            />
             <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
               Your email address has been verified. Your account is fully active.
             </p>

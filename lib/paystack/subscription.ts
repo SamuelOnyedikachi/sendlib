@@ -31,12 +31,14 @@ export async function syncUserSubscription(user: IUser): Promise<IUser> {
  * Returns effective plan ("free" | "pro") taking expiration into account immediately,
  * even for lean / cached queries.
  */
-export function getEffectiveUserPlan(user?: {
-  plan?: string;
-  currentPeriodEnd?: Date;
-  lastPaymentAt?: Date;
-  subscriptionStatus?: string;
-} | null): "free" | "pro" {
+export function getEffectiveUserPlan(
+  user?: {
+    plan?: string;
+    currentPeriodEnd?: Date;
+    lastPaymentAt?: Date;
+    subscriptionStatus?: string;
+  } | null
+): "free" | "pro" {
   if (!user || user.plan !== "pro") return "free";
 
   const now = Date.now();

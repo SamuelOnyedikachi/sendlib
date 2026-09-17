@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { CheckmarkCircleIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { toast } from "sonner";
 import AuthShell from "@/components/auth/AuthShell";
 import { FormField } from "@/components/auth/FormField";
-import { useForgotPassword } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useForgotPassword } from "@/hooks/useAuth";
+import { CheckmarkCircleIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -74,8 +74,9 @@ export default function ForgotPasswordPage() {
           />
           <div className="space-y-1.5">
             <p className="text-xs text-on-surface-variant leading-relaxed">
-              If an account exists for <span className="text-primary-sendlib font-semibold">{email}</span>,
-              you will receive a password reset link shortly. The link expires in 30 minutes.
+              If an account exists for{" "}
+              <span className="text-primary-sendlib font-semibold">{email}</span>, you will receive
+              a password reset link shortly. The link expires in 30 minutes.
             </p>
             <p className="text-[11px] text-secondary">
               Did not get it? Check your spam folder or click resend below.
@@ -142,7 +143,10 @@ export default function ForgotPasswordPage() {
 
           <p className="text-xs text-center text-on-surface-variant pt-1">
             Remembered it?{" "}
-            <Link href="/login" className="text-primary-sendlib font-semibold underline underline-offset-4">
+            <Link
+              href="/login"
+              className="text-primary-sendlib font-semibold underline underline-offset-4"
+            >
               Back to login
             </Link>
           </p>
@@ -150,4 +154,4 @@ export default function ForgotPasswordPage() {
       )}
     </AuthShell>
   );
-}
+}

@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
 import { requireAuthUser } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import EmailTemplate from "@/models/EmailTemplate";
 import { DEFAULT_TEMPLATES, extractVariables, isValidSlug } from "@/lib/templates";
+import EmailTemplate from "@/models/EmailTemplate";
 import mongoose from "mongoose";
+import { NextRequest, NextResponse } from "next/server";
 
 const MAX_HTML_BYTES = 512 * 1024;
 
@@ -14,7 +14,10 @@ export async function GET(req: NextRequest, ctx: Ctx) {
     const user = await requireAuthUser(req);
     const { id } = await ctx.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ success: false, message: "Invalid template id." }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "Invalid template id." },
+        { status: 400 }
+      );
     }
     await connectDB();
     const tpl = await EmailTemplate.findOne({
@@ -52,7 +55,10 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
     const user = await requireAuthUser(req);
     const { id } = await ctx.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ success: false, message: "Invalid template id." }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "Invalid template id." },
+        { status: 400 }
+      );
     }
     await connectDB();
     const userId = new mongoose.Types.ObjectId(user.id);
@@ -81,7 +87,11 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
     } else {
       if (typeof body.name === "string") {
         const name = body.name.trim().slice(0, 80);
-        if (!name) return NextResponse.json({ success: false, message: "Name cannot be empty." }, { status: 400 });
+        if (!name)
+          return NextResponse.json(
+            { success: false, message: "Name cannot be empty." },
+            { status: 400 }
+          );
         tpl.name = name;
       }
       if (typeof body.slug === "string") {
@@ -95,7 +105,10 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
         if (slug !== tpl.slug) {
           const clash = await EmailTemplate.findOne({ userId, slug });
           if (clash) {
-            return NextResponse.json({ success: false, message: `Slug '${slug}' is already used.` }, { status: 409 });
+            return NextResponse.json(
+              { success: false, message: `Slug '${slug}' is already used.` },
+              { status: 409 }
+            );
           }
           tpl.slug = slug;
         }
@@ -105,15 +118,25 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
       }
       if (typeof body.subject === "string") {
         const subject = body.subject.trim();
-        if (!subject) return NextResponse.json({ success: false, message: "Subject cannot be empty." }, { status: 400 });
+        if (!subject)
+          return NextResponse.json(
+            { success: false, message: "Subject cannot be empty." },
+            { status: 400 }
+          );
         tpl.subject = subject;
       }
       if (typeof body.html === "string") {
         if (!body.html.trim()) {
-          return NextResponse.json({ success: false, message: "HTML cannot be empty." }, { status: 400 });
+          return NextResponse.json(
+            { success: false, message: "HTML cannot be empty." },
+            { status: 400 }
+          );
         }
         if (Buffer.byteLength(body.html, "utf8") > MAX_HTML_BYTES) {
-          return NextResponse.json({ success: false, message: "HTML is too large. Keep templates under 512 KB." }, { status: 413 });
+          return NextResponse.json(
+            { success: false, message: "HTML is too large. Keep templates under 512 KB." },
+            { status: 413 }
+          );
         }
         tpl.html = body.html;
       }
@@ -149,7 +172,10 @@ export async function DELETE(req: NextRequest, ctx: Ctx) {
     const user = await requireAuthUser(req);
     const { id } = await ctx.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ success: false, message: "Invalid template id." }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "Invalid template id." },
+        { status: 400 }
+      );
     }
     await connectDB();
     const tpl = await EmailTemplate.findOneAndDelete({

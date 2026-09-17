@@ -13,7 +13,8 @@ export default function LimitsPage() {
       </div>
 
       <p className="text-secondary leading-relaxed">
-        The following limits apply to accounts to ensure platform stability and protect fair usage. Pro plan upgrades increase these limits significantly.
+        The following limits apply to accounts to ensure platform stability and protect fair usage.
+        Pro plan upgrades increase these limits significantly.
       </p>
 
       {/* Section 1: Rate Limits */}
@@ -32,7 +33,9 @@ export default function LimitsPage() {
             </thead>
             <tbody className="divide-y divide-outline-variant/50">
               <tr className="hover:bg-surface-variant/20 transition-colors">
-                <td className="px-4 py-3 font-mono text-xs text-secondary"><code>POST /api/send</code></td>
+                <td className="px-4 py-3 font-mono text-xs text-secondary">
+                  <code>POST /api/send</code>
+                </td>
                 <td className="px-4 py-3 font-bold text-primary-sendlib">30 req</td>
                 <td className="px-4 py-3 font-bold text-primary-sendlib">300 req</td>
                 <td className="px-4 py-3 text-secondary">per minute</td>
@@ -42,7 +45,10 @@ export default function LimitsPage() {
           </table>
         </div>
         <p className="text-xs text-secondary">
-          When a rate limit is hit, the API returns <code className="bg-surface-variant px-1 rounded">429 Too Many Requests</code> with a <code className="bg-surface-variant px-1 rounded">Retry-After</code> header indicating how many seconds to wait.
+          When a rate limit is hit, the API returns{" "}
+          <code className="bg-surface-variant px-1 rounded">429 Too Many Requests</code> with a{" "}
+          <code className="bg-surface-variant px-1 rounded">Retry-After</code> header indicating how
+          many seconds to wait.
         </p>
       </div>
 
@@ -61,34 +67,46 @@ export default function LimitsPage() {
             </thead>
             <tbody className="divide-y divide-outline-variant/50">
               <tr className="hover:bg-surface-variant/20 transition-colors">
-                <td className="px-4 py-3 font-mono text-xs text-secondary"><code>subject</code></td>
+                <td className="px-4 py-3 font-mono text-xs text-secondary">
+                  <code>subject</code>
+                </td>
                 <td className="px-4 py-3 font-bold text-primary-sendlib">998 chars</td>
                 <td className="px-4 py-3 font-bold text-primary-sendlib">998 chars</td>
                 <td className="px-4 py-3 text-secondary">RFC 2822 maximum</td>
               </tr>
               <tr className="hover:bg-surface-variant/20 transition-colors">
-                <td className="px-4 py-3 font-mono text-xs text-secondary"><code>html</code></td>
+                <td className="px-4 py-3 font-mono text-xs text-secondary">
+                  <code>html</code>
+                </td>
                 <td className="px-4 py-3 font-bold text-primary-sendlib">2 MB</td>
                 <td className="px-4 py-3 font-bold text-primary-sendlib">5 MB</td>
                 <td className="px-4 py-3 text-secondary">UTF-8 encoded</td>
               </tr>
               <tr className="hover:bg-surface-variant/20 transition-colors">
-                <td className="px-4 py-3 font-mono text-xs text-secondary"><code>text</code></td>
+                <td className="px-4 py-3 font-mono text-xs text-secondary">
+                  <code>text</code>
+                </td>
                 <td className="px-4 py-3 font-bold text-primary-sendlib">1 MB</td>
                 <td className="px-4 py-3 font-bold text-primary-sendlib">2 MB</td>
                 <td className="px-4 py-3 text-secondary">UTF-8 encoded</td>
               </tr>
               <tr className="hover:bg-surface-variant/20 transition-colors">
-                <td className="px-4 py-3 font-mono text-xs text-secondary"><code>to</code> / <code>cc</code> / <code>bcc</code></td>
+                <td className="px-4 py-3 font-mono text-xs text-secondary">
+                  <code>to</code> / <code>cc</code> / <code>bcc</code>
+                </td>
                 <td className="px-4 py-3 font-bold text-primary-sendlib">50 each</td>
                 <td className="px-4 py-3 font-bold text-primary-sendlib">50 each</td>
                 <td className="px-4 py-3 text-secondary">String or array of strings</td>
               </tr>
               <tr className="hover:bg-surface-variant/20 transition-colors">
-                <td className="px-4 py-3 font-mono text-xs text-secondary"><code>attachments</code></td>
+                <td className="px-4 py-3 font-mono text-xs text-secondary">
+                  <code>attachments</code>
+                </td>
                 <td className="px-4 py-3 font-bold text-primary-sendlib">5 files · 1 MB/file</td>
                 <td className="px-4 py-3 font-bold text-primary-sendlib">20 files · 10 MB/file</td>
-                <td className="px-4 py-3 text-secondary">Base64-encoded. 25 MB total cap enforced by Gmail.</td>
+                <td className="px-4 py-3 text-secondary">
+                  Base64-encoded. 25 MB total cap enforced by Gmail.
+                </td>
               </tr>
             </tbody>
           </table>
@@ -125,31 +143,43 @@ export default function LimitsPage() {
                 <td className="px-4 py-3 text-secondary">Monthly Sending Limit</td>
                 <td className="px-4 py-3 font-bold text-primary-sendlib">3,500 emails / month</td>
                 <td className="px-4 py-3 font-bold text-primary-sendlib">Unlimited</td>
-                <td className="px-4 py-3 text-secondary">Resets monthly based on your account sign-up date</td>
+                <td className="px-4 py-3 text-secondary">
+                  Resets monthly based on your account sign-up date
+                </td>
               </tr>
               <tr className="hover:bg-surface-variant/20 transition-colors">
                 <td className="px-4 py-3 text-secondary">Email Log Retention</td>
                 <td className="px-4 py-3 font-bold text-primary-sendlib">5 days</td>
                 <td className="px-4 py-3 font-bold text-primary-sendlib">90 days</td>
-                <td className="px-4 py-3 text-secondary">Logs are automatically deleted after this period</td>
+                <td className="px-4 py-3 text-secondary">
+                  Logs are automatically deleted after this period
+                </td>
               </tr>
               <tr className="hover:bg-surface-variant/20 transition-colors">
-                <td className="px-4 py-3 text-secondary">Personal Gmail (<code className="text-xs bg-surface-variant px-1 rounded">@gmail.com</code>)</td>
+                <td className="px-4 py-3 text-secondary">
+                  Personal Gmail (
+                  <code className="text-xs bg-surface-variant px-1 rounded">@gmail.com</code>)
+                </td>
                 <td className="px-4 py-3 font-bold text-primary-sendlib">200 emails / day</td>
                 <td className="px-4 py-3 font-bold text-primary-sendlib">500 emails / day</td>
-                <td className="px-4 py-3 text-secondary">Resets daily at UTC midnight. Google hard cap is 500.</td>
+                <td className="px-4 py-3 text-secondary">
+                  Resets daily at UTC midnight. Google hard cap is 500.
+                </td>
               </tr>
               <tr className="hover:bg-surface-variant/20 transition-colors">
                 <td className="px-4 py-3 text-secondary">Google Workspace Account</td>
                 <td className="px-4 py-3 font-bold text-primary-sendlib">1,000 emails / day</td>
                 <td className="px-4 py-3 font-bold text-primary-sendlib">2,000 emails / day</td>
-                <td className="px-4 py-3 text-secondary">Resets daily at UTC midnight. Google hard cap is 2,000.</td>
+                <td className="px-4 py-3 text-secondary">
+                  Resets daily at UTC midnight. Google hard cap is 2,000.
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
         <p className="text-xs text-secondary">
-          Daily sending quotas are set and enforced directly by Google&apos;s Gmail API. Sendlib monitors your send volume and resets your limit tracking daily at UTC midnight.
+          Daily sending quotas are set and enforced directly by Google&apos;s Gmail API. Sendlib
+          monitors your send volume and resets your limit tracking daily at UTC midnight.
         </p>
       </div>
 

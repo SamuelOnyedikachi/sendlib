@@ -8,7 +8,8 @@ export default function DebuggerDocsPage() {
       <div className="mb-10">
         <h1 className="text-3xl font-bold tracking-tight text-primary-sendlib mb-4">Debugger</h1>
         <p className="text-secondary text-lg leading-relaxed">
-          Every send leaves a short trace: request in, template out, Gmail accepted, message sent, plus warnings you can act on.
+          Every send leaves a short trace: request in, template out, Gmail accepted, message sent,
+          plus warnings you can act on.
         </p>
       </div>
 
@@ -16,9 +17,17 @@ export default function DebuggerDocsPage() {
         <div>
           <h2 className="text-xl font-bold text-primary-sendlib mb-3">Where to look</h2>
           <ul className="list-disc pl-5 space-y-2 text-sm">
-            <li><strong>Dashboard → Debugger</strong>: pick a recent send, or paste a JSON body to inspect without sending.</li>
-            <li><strong>Templates</strong>: Run debugger on a draft before you ship it.</li>
-            <li>The <code>/api/send</code> response includes <code>debug.issues</code> so your app can log them too.</li>
+            <li>
+              <strong>Dashboard → Debugger</strong>: pick a recent send, or paste a JSON body to
+              inspect without sending.
+            </li>
+            <li>
+              <strong>Templates</strong>: Run debugger on a draft before you ship it.
+            </li>
+            <li>
+              The <code>/api/send</code> response includes <code>debug.issues</code> so your app can
+              log them too.
+            </li>
           </ul>
         </div>
 
@@ -61,9 +70,7 @@ export default function DebuggerDocsPage() {
         </div>
       </div>
 
-      <DocsPagination
-        prev={{ title: "Templates", href: "/docs/templates" }}
-      />
+      <DocsPagination prev={{ title: "Templates", href: "/docs/templates" }} />
     </div>
   );
 }

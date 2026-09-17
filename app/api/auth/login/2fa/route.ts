@@ -1,16 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
 import { setAuthCookies } from "@/lib/auth";
-import { rateLimit } from "@/lib/rateLimit";
+import { authErrorResponse, getDeviceInfo, parseJsonBody } from "@/lib/auth/handlers";
 import { completeTwoFactorLogin } from "@/lib/auth/service";
-import { getDeviceInfo, authErrorResponse, parseJsonBody } from "@/lib/auth/handlers";
+import { rateLimit } from "@/lib/rateLimit";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await parseJsonBody(req);
     const device = getDeviceInfo(req);
 
-    const pendingToken =
-      req.cookies.get("access_token")?.value ?? String(body.sessionToken ?? "");
+    const pendingToken = req.cookies.get("access_token")?.value ?? String(body.sessionToken ?? "");
 
     const rl = await rateLimit("login", `2fa:${device.ip ?? "unknown"}`);
     if (!rl.success) {

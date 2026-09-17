@@ -1,29 +1,36 @@
-import { NextRequest, NextResponse } from "next/server";
 import { requireAuthUser } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
+import {
+  type DebugStep,
+  analyzeHtmlIssues,
+  buildDebugReport,
+  formatHtmlSize,
+} from "@/lib/emailDebugger";
+import { sendGmailEmail } from "@/lib/gmail";
+import { getEffectiveUserPlan } from "@/lib/paystack";
+import { interpolate, isValidSlug } from "@/lib/templates";
 import EmailLog from "@/models/EmailLog";
 import EmailTemplate from "@/models/EmailTemplate";
 import GmailAccount from "@/models/GmailAccount";
 import User from "@/models/User";
 import mongoose from "mongoose";
-import { interpolate, isValidSlug } from "@/lib/templates";
-import { analyzeHtmlIssues, buildDebugReport, formatHtmlSize, type DebugStep } from "@/lib/emailDebugger";
-import { sendGmailEmail } from "@/lib/gmail";
-import { getEffectiveUserPlan } from "@/lib/paystack";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   try {
     const user = await requireAuthUser(req);
     await connectDB();
 
-    const dbUser = await User.findById(user.id).select("plan currentPeriodEnd lastPaymentAt subscriptionStatus").lean();
+    const dbUser = await User.findById(user.id)
+      .select("plan currentPeriodEnd lastPaymentAt subscriptionStatus")
+      .lean();
     const effectivePlan = getEffectiveUserPlan(dbUser);
     const retentionDays = effectivePlan === "pro" ? 90 : 5;
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - retentionDays);
 
     const { searchParams } = new URL(req.url);
-    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
+    const limit = Math.min(50, Math.max(1, Number.parseInt(searchParams.get("limit") ?? "20", 10)));
 
     const logs = await EmailLog.find({
       userId: new mongoose.Types.ObjectId(user.id),
@@ -64,7 +71,7 @@ export async function POST(req: NextRequest) {
     const shouldSend = body.send === true;
 
     let html = typeof body.html === "string" ? body.html : "";
-    let text = typeof body.text === "string" ? body.text : "";
+    const text = typeof body.text === "string" ? body.text : "";
     let subject = typeof body.subject === "string" ? body.subject : "";
     const to = body.to;
     let from = typeof body.from === "string" ? body.from : "";
@@ -75,14 +82,20 @@ export async function POST(req: NextRequest) {
     if (body.template) {
       const slug = String(body.template).trim().toLowerCase();
       if (!isValidSlug(slug)) {
-        return NextResponse.json({ success: false, message: "Invalid template slug." }, { status: 400 });
+        return NextResponse.json(
+          { success: false, message: "Invalid template slug." },
+          { status: 400 }
+        );
       }
       const tpl = await EmailTemplate.findOne({
         userId: new mongoose.Types.ObjectId(user.id),
         slug,
       });
       if (!tpl) {
-        return NextResponse.json({ success: false, message: `Unknown template '${slug}'.` }, { status: 404 });
+        return NextResponse.json(
+          { success: false, message: `Unknown template '${slug}'.` },
+          { status: 404 }
+        );
       }
       const data =
         body.data && typeof body.data === "object" && !Array.isArray(body.data)
@@ -168,7 +181,10 @@ export async function POST(req: NextRequest) {
     }
 
     if (!to || (Array.isArray(to) ? to.length === 0 : !String(to).trim())) {
-      return NextResponse.json({ success: false, message: "Add a recipient to send a test." }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "Add a recipient to send a test." },
+        { status: 400 }
+      );
     }
     if (!from) {
       return NextResponse.json(
@@ -177,7 +193,10 @@ export async function POST(req: NextRequest) {
       );
     }
     if (!subject || (!html && !text)) {
-      return NextResponse.json({ success: false, message: "Subject and HTML are required to send." }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "Subject and HTML are required to send." },
+        { status: 400 }
+      );
     }
     if (missingVars.length > 0) {
       return NextResponse.json(
@@ -190,7 +209,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const dbUser = await User.findById(user.id).select("plan currentPeriodEnd lastPaymentAt subscriptionStatus").lean();
+    const dbUser = await User.findById(user.id)
+      .select("plan currentPeriodEnd lastPaymentAt subscriptionStatus")
+      .lean();
     const plan = getEffectiveUserPlan(dbUser);
     const retentionDays = plan === "pro" ? 90 : 5;
 
@@ -212,17 +233,31 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      const report = result.debug ?? buildDebugReport({
-        issues,
-        steps: [
-          ...preSteps,
-          { key: "gmail", label: "Gmail accepted request", ok: true, detail: `Queued through ${from}.` },
-          { key: "sent", label: "Message sent", ok: true, detail: result.messageId ? `Message ID ${result.messageId}.` : "Gmail accepted the message." },
-        ],
-        html,
-        text,
-        templateSlug,
-      });
+      const report =
+        result.debug ??
+        buildDebugReport({
+          issues,
+          steps: [
+            ...preSteps,
+            {
+              key: "gmail",
+              label: "Gmail accepted request",
+              ok: true,
+              detail: `Queued through ${from}.`,
+            },
+            {
+              key: "sent",
+              label: "Message sent",
+              ok: true,
+              detail: result.messageId
+                ? `Message ID ${result.messageId}.`
+                : "Gmail accepted the message.",
+            },
+          ],
+          html,
+          text,
+          templateSlug,
+        });
 
       return NextResponse.json({
         success: true,

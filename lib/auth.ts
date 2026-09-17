@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import User from "@/models/User";
 import Session from "@/models/Session";
-import { findSessionByToken, PENDING_SESSION_TTL_MS, SESSION_TTL_MS } from "./auth/sessions";
+import User from "@/models/User";
+import { NextRequest, NextResponse } from "next/server";
+import { PENDING_SESSION_TTL_MS, SESSION_TTL_MS, findSessionByToken } from "./auth/sessions";
 
 export const SESSION_COOKIE_NAME = "access_token";
 export const MARKER_COOKIE_NAME = "logged_in";
@@ -46,9 +46,7 @@ export async function getAuthUser(req: NextRequest): Promise<AuthUser | null> {
     if (session.revokedAt) return null;
     if (session.expiresAt.getTime() <= Date.now()) return null;
 
-    const user = await User.findById(session.userId).select(
-      "_id email displayName disabled"
-    );
+    const user = await User.findById(session.userId).select("_id email displayName disabled");
     if (!user || user.disabled) return null;
 
     // Throttle the lastActiveAt write so hot endpoints don't hammer Mongo.
@@ -71,10 +69,10 @@ export async function getAuthUser(req: NextRequest): Promise<AuthUser | null> {
 export async function requireAuthUser(req: NextRequest): Promise<AuthUser> {
   const user = await getAuthUser(req);
   if (!user) {
-    throw new Response(
-      JSON.stringify({ success: false, message: "Authentication required" }),
-      { status: 401, headers: { "Content-Type": "application/json" } }
-    );
+    throw new Response(JSON.stringify({ success: false, message: "Authentication required" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
   }
   return user;
 }

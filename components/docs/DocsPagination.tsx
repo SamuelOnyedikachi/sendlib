@@ -1,6 +1,6 @@
+import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
-import { HugeiconsIcon } from '@hugeicons/react';
-import { ArrowLeft01Icon, ArrowRight01Icon } from '@hugeicons/core-free-icons';
 
 interface NavItem {
   title: string;
@@ -24,11 +24,11 @@ export function DocsPagination({ prev, next }: DocsPaginationProps) {
             <HugeiconsIcon icon={ArrowLeft01Icon} size={14} color="currentColor" />
             Previous
           </span>
-          <span className="font-bold text-sm text-primary-sendlib mt-1">
-            {prev.title}
-          </span>
+          <span className="font-bold text-sm text-primary-sendlib mt-1">{prev.title}</span>
         </Link>
-      ) : <div />}
+      ) : (
+        <div />
+      )}
 
       {next ? (
         <Link
@@ -39,11 +39,11 @@ export function DocsPagination({ prev, next }: DocsPaginationProps) {
             Next
             <HugeiconsIcon icon={ArrowRight01Icon} size={14} color="currentColor" />
           </span>
-          <span className="font-bold text-sm text-primary-sendlib mt-1">
-            {next.title}
-          </span>
+          <span className="font-bold text-sm text-primary-sendlib mt-1">{next.title}</span>
         </Link>
-      ) : <div />}
+      ) : (
+        <div />
+      )}
     </div>
   );
 }

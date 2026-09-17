@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import { getClientIp } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
 import { AuthError } from "./errors";
 
 export function getDeviceInfo(req: NextRequest): { ip?: string; userAgent?: string } {
@@ -20,7 +20,7 @@ export function authErrorResponse(err: unknown): NextResponse {
       { status: err.status }
     );
   }
-  if (err instanceof Response) return (err as Response) as NextResponse;
+  if (err instanceof Response) return err as Response as NextResponse;
   console.error("Auth flow error:", err);
   return NextResponse.json(
     { success: false, code: "internal_error", message: "Something went wrong. Please try again." },
@@ -33,9 +33,9 @@ export function authOk(data: Record<string, unknown> = {}, message?: string) {
 }
 
 /** Parse a JSON request body, failing gracefully on malformed input. */
-export async function parseJsonBody(req: NextRequest): Promise<Record<string, any>> {
+export async function parseJsonBody(req: NextRequest): Promise<Record<string, unknown>> {
   try {
-    return (await req.json()) as Record<string, any>;
+    return (await req.json()) as Record<string, unknown>;
   } catch {
     return {};
   }

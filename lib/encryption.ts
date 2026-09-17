@@ -5,7 +5,10 @@ const IV_LENGTH = 16;
 
 function getKey(): Buffer {
   const hex = process.env.ENCRYPTION_KEY;
-  if (!hex) throw new Error("ENCRYPTION_KEY environment variable is not set. Cannot encrypt or decrypt tokens.");
+  if (!hex)
+    throw new Error(
+      "ENCRYPTION_KEY environment variable is not set. Cannot encrypt or decrypt tokens."
+    );
   return Buffer.from(hex, "hex");
 }
 
@@ -24,4 +27,3 @@ export function decrypt(encryptedText: string): string {
   const decrypted = Buffer.concat([decipher.update(encryptedBuffer), decipher.final()]);
   return decrypted.toString("utf8");
 }
-

@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 
 export interface User {
@@ -227,7 +227,11 @@ export function useBeginTwoFactorSetup() {
 export function useConfirmTwoFactorSetup() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { code: string }): Promise<{ success: boolean; message: string; data?: User }> => {
+    mutationFn: async (input: { code: string }): Promise<{
+      success: boolean;
+      message: string;
+      data?: User;
+    }> => {
       const res = await api.post<never, { success: boolean; message: string; data?: User }>(
         "/auth/2fa/confirm",
         input
@@ -243,7 +247,10 @@ export function useConfirmTwoFactorSetup() {
 export function useDisableTwoFactor() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { password?: string; code?: string }): Promise<{ success: boolean; message: string }> => {
+    mutationFn: async (input: { password?: string; code?: string }): Promise<{
+      success: boolean;
+      message: string;
+    }> => {
       const res = await api.post<never, { success: boolean; message: string }>(
         "/auth/2fa/disable",
         input

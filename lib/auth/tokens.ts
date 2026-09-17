@@ -1,7 +1,5 @@
-import VerificationToken, {
-  VerificationTokenKind,
-} from "@/models/VerificationToken";
 import User from "@/models/User";
+import VerificationToken, { VerificationTokenKind } from "@/models/VerificationToken";
 import { generateSecureToken, hashToken, normalizeEmail } from "./utils";
 
 export const TOKEN_TTL_MS: Record<VerificationTokenKind, number> = {

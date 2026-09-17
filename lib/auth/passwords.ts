@@ -1,5 +1,5 @@
 import argon2 from "argon2";
-import { passwordSchema, emailSchema } from "./passwordPolicy";
+import { emailSchema, passwordSchema } from "./passwordPolicy";
 
 /**
  * Argon2id with OWASP-recommended parameters (memory 19 MiB, iterations 2,
@@ -40,7 +40,9 @@ export function validatePassword(password: unknown): { ok: true } | { ok: false;
   return { ok: true };
 }
 
-export function validateEmail(email: unknown): { ok: true; value: string } | { ok: false; error: string } {
+export function validateEmail(
+  email: unknown
+): { ok: true; value: string } | { ok: false; error: string } {
   const parsed = emailSchema.safeParse(email);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid email address." };

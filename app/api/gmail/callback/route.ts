@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import { handleGmailCallback, verifyGmailState } from "@/lib/gmail";
+import { NextRequest, NextResponse } from "next/server";
 
 const { NEXT_PUBLIC_APP_URL } = process.env;
 
@@ -17,7 +17,9 @@ export async function GET(req: NextRequest) {
     userId = verifyGmailState(state);
   } catch (err) {
     console.error("Gmail callback state verification failed:", err);
-    return NextResponse.redirect(`${NEXT_PUBLIC_APP_URL}/dashboard/accounts?gmail_error=invalid_state`);
+    return NextResponse.redirect(
+      `${NEXT_PUBLIC_APP_URL}/dashboard/accounts?gmail_error=invalid_state`
+    );
   }
 
   try {
@@ -28,7 +30,8 @@ export async function GET(req: NextRequest) {
     );
   } catch (err) {
     console.error("Gmail callback error:", err);
-    return NextResponse.redirect(`${NEXT_PUBLIC_APP_URL}/dashboard/accounts?gmail_error=callback_failed`);
+    return NextResponse.redirect(
+      `${NEXT_PUBLIC_APP_URL}/dashboard/accounts?gmail_error=callback_failed`
+    );
   }
 }
-

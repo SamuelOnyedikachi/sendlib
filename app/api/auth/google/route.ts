@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { buildGoogleAuthUrl } from "@/lib/gmail";
 import { rateLimit } from "@/lib/rateLimit";
-import crypto from "crypto";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   // Rate limit: 10 auth attempts per minute per IP
@@ -11,7 +11,9 @@ export async function GET(req: NextRequest) {
     return new NextResponse("Too many auth requests. Try again in a minute.", { status: 429 });
   }
 
-  const redirectUri = process.env.GOOGLE_CALLBACK_URL || `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/google/callback`;
+  const redirectUri =
+    process.env.GOOGLE_CALLBACK_URL ||
+    `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/google/callback`;
   const state = crypto.randomBytes(16).toString("hex");
 
   const url = buildGoogleAuthUrl({

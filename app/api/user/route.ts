@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
 import { requireAuthUser } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import User from "@/models/User";
-import GmailAccount from "@/models/GmailAccount";
-import EmailLog from "@/models/EmailLog";
 import ApiKey from "@/models/ApiKey";
+import EmailLog from "@/models/EmailLog";
+import GmailAccount from "@/models/GmailAccount";
+import User from "@/models/User";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   try {
@@ -39,28 +39,35 @@ export async function PATCH(req: NextRequest) {
     await connectDB();
 
     const { displayName: rawDisplayName } = await req.json();
-    const updateData: Record<string, any> = {};
+    const updateData: Record<string, unknown> = {};
 
     if (rawDisplayName !== undefined) {
       const displayName = String(rawDisplayName).trim();
       if (!displayName || displayName.length === 0) {
-        return NextResponse.json({ success: false, message: "Display name cannot be empty." }, { status: 400 });
+        return NextResponse.json(
+          { success: false, message: "Display name cannot be empty." },
+          { status: 400 }
+        );
       }
       if (displayName.length > 35) {
-        return NextResponse.json({ success: false, message: "Display name is too long. Max 35 characters." }, { status: 400 });
+        return NextResponse.json(
+          { success: false, message: "Display name is too long. Max 35 characters." },
+          { status: 400 }
+        );
       }
       updateData.displayName = displayName;
     }
 
     if (Object.keys(updateData).length === 0) {
-      return NextResponse.json({ success: false, message: "No data provided to update." }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "No data provided to update." },
+        { status: 400 }
+      );
     }
 
-    const user = await User.findByIdAndUpdate(
-      authUser.id,
-      updateData,
-      { new: true }
-    ).select("-__v").lean();
+    const user = await User.findByIdAndUpdate(authUser.id, updateData, { new: true })
+      .select("-__v")
+      .lean();
 
     if (!user) {
       return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
@@ -96,7 +103,10 @@ export async function DELETE(req: NextRequest) {
       User.findByIdAndDelete(authUser.id),
     ]);
 
-    const response = NextResponse.json({ success: true, message: "Account and all associated data deleted" });
+    const response = NextResponse.json({
+      success: true,
+      message: "Account and all associated data deleted",
+    });
     response.cookies.set("access_token", "", { maxAge: 0, path: "/" });
     return response;
   } catch (err) {

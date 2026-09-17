@@ -19,7 +19,11 @@ export function FormField({ label, htmlFor, error, hint, children }: FormFieldPr
       </label>
       {children}
       {hint && !error && <p className="text-xs text-secondary">{hint}</p>}
-      {error && <p className="text-xs text-red-400" role="alert">{error}</p>}
+      {error && (
+        <p className="text-xs text-red-400" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

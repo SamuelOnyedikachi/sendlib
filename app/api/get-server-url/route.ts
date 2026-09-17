@@ -3,12 +3,9 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const serverUrl = process.env.NEXT_PUBLIC_API_URL;
-    
+
     if (!serverUrl) {
-      return NextResponse.json(
-        { message: "Server URL not configured" },
-        { status: 500 }
-      );
+      return NextResponse.json({ message: "Server URL not configured" }, { status: 500 });
     }
 
     return NextResponse.json(
@@ -24,10 +21,7 @@ export async function GET() {
     );
   } catch (error) {
     console.error("Error fetching server URL:", error);
-    return NextResponse.json(
-      { message: "Failed to fetch server URL" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Failed to fetch server URL" }, { status: 500 });
   }
 }
 

@@ -1,18 +1,18 @@
-// googleapis removed - all Google API calls use axios directly
-import axios, { isAxiosError } from "axios";
-import axiosSrv from "@/lib/axios";
-import { encrypt, decrypt } from "./encryption";
-import { connectDB } from "./db";
-import GmailAccount from "@/models/GmailAccount";
-import EmailLog from "@/models/EmailLog";
-import User from "@/models/User";
-import MailComposer from "nodemailer/lib/mail-composer";
-import mongoose from "mongoose";
 import crypto from "crypto";
 import dns from "dns";
+import axiosSrv from "@/lib/axios";
 import type { DebugIssue, DebugReport, DebugStep } from "@/lib/emailDebugger";
 import { buildDebugReport } from "@/lib/emailDebugger";
 import { connectToRedis } from "@/lib/redis";
+import EmailLog from "@/models/EmailLog";
+import GmailAccount from "@/models/GmailAccount";
+import User from "@/models/User";
+// googleapis removed - all Google API calls use axios directly
+import axios, { isAxiosError } from "axios";
+import mongoose from "mongoose";
+import MailComposer from "nodemailer/lib/mail-composer";
+import { connectDB } from "./db";
+import { decrypt, encrypt } from "./encryption";
 
 // Fix for Zeabur DNS resolution issue (IPv4 only)
 dns.setDefaultResultOrder("ipv4first");
@@ -56,7 +56,7 @@ export function verifyGmailState(state: string): string {
 
   const hmac = parts[parts.length - 1];
   const payload = parts.slice(0, -1).join(":");
-  const timestamp = parseInt(parts[parts.length - 2], 10);
+  const timestamp = Number.parseInt(parts[parts.length - 2], 10);
   const userId = parts[0];
 
   const expected = crypto.createHmac("sha256", JWT_SECRET!).update(payload).digest("hex");
@@ -175,7 +175,7 @@ export type GmailSendOptions = {
 
 function finalizeDebug(
   options: GmailSendOptions,
-  extraSteps: DebugStep[],
+  extraSteps: DebugStep[]
 ): DebugReport | undefined {
   if (!options.debug && extraSteps.length === 0) return undefined;
   return buildDebugReport({
@@ -205,12 +205,15 @@ export async function sendGmailEmail(
   if (!lookupEmail) {
     throw new Error("The 'from' field is required.");
   }
-  
+
   account = await GmailAccount.findOne({ userId, gmailEmail: lookupEmail });
   if (!account) {
-    throw new Error(`Gmail account '${lookupEmail}' is not connected. Please go to your Sendlib dashboard, connect this Gmail account, and try again.`);
+    throw new Error(
+      `Gmail account '${lookupEmail}' is not connected. Please go to your Sendlib dashboard, connect this Gmail account, and try again.`
+    );
   }
-  if (!account.connected) throw new Error(`Gmail account '${account.gmailEmail}' is disconnected. Please reconnect.`);
+  if (!account.connected)
+    throw new Error(`Gmail account '${account.gmailEmail}' is disconnected. Please reconnect.`);
 
   const user = await User.findById(userId);
   if (!user) {
@@ -222,7 +225,7 @@ export async function sendGmailEmail(
   // Check and reset monthly quota if reset date has passed
   const now = new Date();
   if (user.monthlyLimitResetAt && now >= user.monthlyLimitResetAt) {
-    let nextReset = new Date(user.monthlyLimitResetAt);
+    const nextReset = new Date(user.monthlyLimitResetAt);
     nextReset.setMonth(nextReset.getMonth() + 1);
     while (nextReset <= now) {
       nextReset.setMonth(nextReset.getMonth() + 1);
@@ -239,14 +242,15 @@ export async function sendGmailEmail(
   }
 
   if (!isPro && (user.monthlySentCount || 0) >= 3500) {
-    throw new Error("Monthly limit reached: You have already sent 3,500 emails this month (limit for the Free plan). Please upgrade to Pro to unlock unlimited monthly sending.");
+    throw new Error(
+      "Monthly limit reached: You have already sent 3,500 emails this month (limit for the Free plan). Please upgrade to Pro to unlock unlimited monthly sending."
+    );
   }
 
   const senderEmail = account.gmailEmail;
-  const isWorkspace = !senderEmail.endsWith("@gmail.com") && !senderEmail.endsWith("@googlemail.com");
-  const limit = isWorkspace
-    ? isPro ? 2000 : 1000
-    : isPro ? 500 : 200;
+  const isWorkspace =
+    !senderEmail.endsWith("@gmail.com") && !senderEmail.endsWith("@googlemail.com");
+  const limit = isWorkspace ? (isPro ? 2000 : 1000) : isPro ? 500 : 200;
 
   // Atomic per-Gmail daily cap using Redis INCR.
   // Key resets naturally via TTL; 25 hours covers timezone drift.
@@ -272,13 +276,15 @@ export async function sendGmailEmail(
         end
         return c
       `;
-      dailyCountAfterIncr = await redis.eval(dailyScript, 1, dailyKey, 90000) as number;
+      dailyCountAfterIncr = (await redis.eval(dailyScript, 1, dailyKey, 90000)) as number;
 
       // If we just exceeded the limit, decrement so we don't eat from the
       // counter on a rejected request, then throw.
       if (dailyCountAfterIncr > limit) {
         await redis.decr(dailyKey);
-        throw new Error(`Daily limit reached: Connected Gmail '${senderEmail}' has already sent ${limit} of its ${limit} daily allowed emails today.${!isPro ? " Upgrade to Pro to unlock higher daily sending limits." : ""}`);
+        throw new Error(
+          `Daily limit reached: Connected Gmail '${senderEmail}' has already sent ${limit} of its ${limit} daily allowed emails today.${!isPro ? " Upgrade to Pro to unlock higher daily sending limits." : ""}`
+        );
       }
 
       // Burst guard: sliding window, max burstMax per burstWindowMs
@@ -293,25 +299,37 @@ export async function sendGmailEmail(
         redis.call("EXPIRE", KEYS[1], 10)
         return 1
       `;
-      const burstAllowed = await redis.eval(
-        burstScript, 1, burstKey,
-        Date.now(), burstWindowMs, burstMax
-      ) as number;
+      const burstAllowed = (await redis.eval(
+        burstScript,
+        1,
+        burstKey,
+        Date.now(),
+        burstWindowMs,
+        burstMax
+      )) as number;
 
       if (burstAllowed === 0) {
         // Decrement the daily counter we just incremented
         await redis.decr(dailyKey);
-        throw new Error(`Sending too fast. Please slow down requests to '${senderEmail}' to avoid triggering Gmail spam detection.`);
+        throw new Error(
+          `Sending too fast. Please slow down requests to '${senderEmail}' to avoid triggering Gmail spam detection.`
+        );
       }
 
       redisAvailable = true;
     } catch (err) {
       // Re-throw our own limit/burst errors
-      if (err instanceof Error && (err.message.startsWith("Daily limit") || err.message.startsWith("Sending too fast"))) {
+      if (
+        err instanceof Error &&
+        (err.message.startsWith("Daily limit") || err.message.startsWith("Sending too fast"))
+      ) {
         throw err;
       }
       // Redis infra error -- fall through to MongoDB fallback
-      console.error("Redis daily cap unavailable, falling back to MongoDB:", err instanceof Error ? err.message : err);
+      console.error(
+        "Redis daily cap unavailable, falling back to MongoDB:",
+        err instanceof Error ? err.message : err
+      );
     }
   }
 
@@ -323,10 +341,12 @@ export async function sendGmailEmail(
       userId: account.userId,
       from: senderEmail,
       status: "sent",
-      createdAt: { $gte: startOfToday }
+      createdAt: { $gte: startOfToday },
     });
     if (sentCount >= limit) {
-      throw new Error(`Daily limit reached: Connected Gmail '${senderEmail}' has already sent ${sentCount} of its ${limit} daily allowed emails today.${!isPro ? " Upgrade to Pro to unlock higher daily sending limits." : ""}`);
+      throw new Error(
+        `Daily limit reached: Connected Gmail '${senderEmail}' has already sent ${sentCount} of its ${limit} daily allowed emails today.${!isPro ? " Upgrade to Pro to unlock higher daily sending limits." : ""}`
+      );
     }
   }
 
@@ -415,8 +435,18 @@ export async function sendGmailEmail(
     expiresAt.setDate(expiresAt.getDate() + (options.retentionDays ?? 5));
 
     const debug = finalizeDebug(options, [
-      { key: "gmail", label: "Gmail accepted request", ok: true, detail: `Queued through ${senderEmail}.` },
-      { key: "sent", label: "Message sent", ok: true, detail: result.data.id ? `Message ID ${result.data.id}.` : "Gmail accepted the message." },
+      {
+        key: "gmail",
+        label: "Gmail accepted request",
+        ok: true,
+        detail: `Queued through ${senderEmail}.`,
+      },
+      {
+        key: "sent",
+        label: "Message sent",
+        ok: true,
+        detail: result.data.id ? `Message ID ${result.data.id}.` : "Gmail accepted the message.",
+      },
     ]);
 
     await EmailLog.create({

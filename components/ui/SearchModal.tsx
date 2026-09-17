@@ -1,7 +1,5 @@
 "use client";
 
-import * as React from "react";
-import { useRouter } from "next/navigation";
 import {
   CommandDialog,
   CommandEmpty,
@@ -11,17 +9,19 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { 
-  BarChartIcon, 
-  MailIcon, 
-  Key01Icon, 
-  FileTypeIcon, 
-  Settings01Icon,
+import {
+  BarChartIcon,
   CreditCardIcon,
+  FileTypeIcon,
+  Key01Icon,
   Layout01Icon,
-  SearchVisualIcon
+  MailIcon,
+  SearchVisualIcon,
+  Settings01Icon,
 } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useRouter } from "next/navigation";
+import * as React from "react";
 
 export function SearchModal() {
   const [open, setOpen] = React.useState(false);
@@ -48,53 +48,101 @@ export function SearchModal() {
       <CommandInput placeholder="Search pages, settings, accounts..." />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
-        
+
         <CommandGroup heading="Pages">
           <CommandItem onSelect={() => runCommand(() => router.push("/dashboard"))}>
-            <HugeiconsIcon icon={BarChartIcon} size={16} color="currentColor" strokeWidth={1.5} className="mr-2 text-secondary" />
+            <HugeiconsIcon
+              icon={BarChartIcon}
+              size={16}
+              color="currentColor"
+              strokeWidth={1.5}
+              className="mr-2 text-secondary"
+            />
             <div className="flex flex-col">
               <span>Dashboard</span>
-              <span className="text-xs text-secondary/70">Overview of your relay limits and recent activity</span>
+              <span className="text-xs text-secondary/70">
+                Overview of your relay limits and recent activity
+              </span>
             </div>
           </CommandItem>
-          
+
           <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/accounts"))}>
-            <HugeiconsIcon icon={MailIcon} size={16} color="currentColor" strokeWidth={1.5} className="mr-2 text-secondary" />
+            <HugeiconsIcon
+              icon={MailIcon}
+              size={16}
+              color="currentColor"
+              strokeWidth={1.5}
+              className="mr-2 text-secondary"
+            />
             <div className="flex flex-col">
               <span>Gmail Accounts</span>
-              <span className="text-xs text-secondary/70">Manage connected Gmails and authentication</span>
+              <span className="text-xs text-secondary/70">
+                Manage connected Gmails and authentication
+              </span>
             </div>
           </CommandItem>
-          
+
           <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/keys"))}>
-            <HugeiconsIcon icon={Key01Icon} size={16} color="currentColor" strokeWidth={1.5} className="mr-2 text-secondary" />
+            <HugeiconsIcon
+              icon={Key01Icon}
+              size={16}
+              color="currentColor"
+              strokeWidth={1.5}
+              className="mr-2 text-secondary"
+            />
             <div className="flex flex-col">
               <span>API Keys</span>
-              <span className="text-xs text-secondary/70">Generate and revoke API keys for your applications</span>
+              <span className="text-xs text-secondary/70">
+                Generate and revoke API keys for your applications
+              </span>
             </div>
           </CommandItem>
 
           <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/templates"))}>
-            <HugeiconsIcon icon={Layout01Icon} size={16} color="currentColor" strokeWidth={1.5} className="mr-2 text-secondary" />
+            <HugeiconsIcon
+              icon={Layout01Icon}
+              size={16}
+              color="currentColor"
+              strokeWidth={1.5}
+              className="mr-2 text-secondary"
+            />
             <div className="flex flex-col">
               <span>Templates</span>
-              <span className="text-xs text-secondary/70">Build welcome, OTP, invoice, and reset emails</span>
+              <span className="text-xs text-secondary/70">
+                Build welcome, OTP, invoice, and reset emails
+              </span>
             </div>
           </CommandItem>
 
           <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/debugger"))}>
-            <HugeiconsIcon icon={SearchVisualIcon} size={16} color="currentColor" strokeWidth={1.5} className="mr-2 text-secondary" />
+            <HugeiconsIcon
+              icon={SearchVisualIcon}
+              size={16}
+              color="currentColor"
+              strokeWidth={1.5}
+              className="mr-2 text-secondary"
+            />
             <div className="flex flex-col">
               <span>Debugger</span>
-              <span className="text-xs text-secondary/70">Trace send steps, variables, and HTML warnings</span>
+              <span className="text-xs text-secondary/70">
+                Trace send steps, variables, and HTML warnings
+              </span>
             </div>
           </CommandItem>
-          
+
           <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/logs"))}>
-            <HugeiconsIcon icon={FileTypeIcon} size={16} color="currentColor" strokeWidth={1.5} className="mr-2 text-secondary" />
+            <HugeiconsIcon
+              icon={FileTypeIcon}
+              size={16}
+              color="currentColor"
+              strokeWidth={1.5}
+              className="mr-2 text-secondary"
+            />
             <div className="flex flex-col">
               <span>Email Logs</span>
-              <span className="text-xs text-secondary/70">Track recent emails, bounces, and deliverability</span>
+              <span className="text-xs text-secondary/70">
+                Track recent emails, bounces, and deliverability
+              </span>
             </div>
           </CommandItem>
         </CommandGroup>
@@ -103,17 +151,33 @@ export function SearchModal() {
 
         <CommandGroup heading="Account">
           <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/settings"))}>
-            <HugeiconsIcon icon={Settings01Icon} size={16} color="currentColor" strokeWidth={1.5} className="mr-2 text-secondary" />
+            <HugeiconsIcon
+              icon={Settings01Icon}
+              size={16}
+              color="currentColor"
+              strokeWidth={1.5}
+              className="mr-2 text-secondary"
+            />
             <div className="flex flex-col">
               <span>Settings</span>
-              <span className="text-xs text-secondary/70">Manage personal details and workspace preferences</span>
+              <span className="text-xs text-secondary/70">
+                Manage personal details and workspace preferences
+              </span>
             </div>
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/settings"))}>
-            <HugeiconsIcon icon={CreditCardIcon} size={16} color="currentColor" strokeWidth={1.5} className="mr-2 text-secondary" />
+            <HugeiconsIcon
+              icon={CreditCardIcon}
+              size={16}
+              color="currentColor"
+              strokeWidth={1.5}
+              className="mr-2 text-secondary"
+            />
             <div className="flex flex-col">
               <span>Billing & Plans</span>
-              <span className="text-xs text-secondary/70">Manage subscription, upgrade to Pro, and billing details</span>
+              <span className="text-xs text-secondary/70">
+                Manage subscription, upgrade to Pro, and billing details
+              </span>
             </div>
           </CommandItem>
         </CommandGroup>

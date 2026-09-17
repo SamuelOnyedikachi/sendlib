@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import { requireAuthUser, SESSION_COOKIE_NAME } from "@/lib/auth";
-import { rateLimit } from "@/lib/rateLimit";
+import { SESSION_COOKIE_NAME, requireAuthUser } from "@/lib/auth";
+import { authErrorResponse, getDeviceInfo, parseJsonBody } from "@/lib/auth/handlers";
 import { changePassword } from "@/lib/auth/service";
-import { getDeviceInfo, authErrorResponse, parseJsonBody } from "@/lib/auth/handlers";
+import { rateLimit } from "@/lib/rateLimit";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {

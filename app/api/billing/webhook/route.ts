@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import User from "@/models/User";
 import { verifyPaystackSignature } from "@/lib/paystack";
+import User from "@/models/User";
 import mongoose from "mongoose";
+import { NextRequest, NextResponse } from "next/server";
 
 interface PaystackWebhookPayload {
   event?: string;
@@ -34,12 +34,18 @@ export async function POST(req: NextRequest) {
 
     if (!secretKey) {
       console.error("PAYSTACK_SECRET_KEY is not set. Rejecting webhook.");
-      return NextResponse.json({ success: false, message: "Webhook not configured" }, { status: 500 });
+      return NextResponse.json(
+        { success: false, message: "Webhook not configured" },
+        { status: 500 }
+      );
     }
 
     if (!signature) {
       console.warn("Paystack webhook missing x-paystack-signature header.");
-      return NextResponse.json({ success: false, message: "Missing signature header" }, { status: 401 });
+      return NextResponse.json(
+        { success: false, message: "Missing signature header" },
+        { status: 401 }
+      );
     }
 
     const isValid = verifyPaystackSignature(rawBody, signature, secretKey);
@@ -84,7 +90,9 @@ export async function POST(req: NextRequest) {
 
     if (event === "charge.success") {
       const paidAt = data.paid_at ? new Date(data.paid_at) : new Date();
-      const periodEnd = data.next_payment_date ? new Date(data.next_payment_date) : new Date(paidAt.getTime() + 31 * 24 * 60 * 60 * 1000);
+      const periodEnd = data.next_payment_date
+        ? new Date(data.next_payment_date)
+        : new Date(paidAt.getTime() + 31 * 24 * 60 * 60 * 1000);
 
       user.set("plan", "pro");
       user.set("subscriptionStatus", "active");

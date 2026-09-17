@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { rateLimit } from "@/lib/rateLimit";
 import crypto from "crypto";
+import { rateLimit } from "@/lib/rateLimit";
+import { NextRequest, NextResponse } from "next/server";
 
 const { GITHUB_CLIENT_ID } = process.env;
 

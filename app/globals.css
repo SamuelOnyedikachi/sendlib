@@ -1,4 +1,4 @@
-@import "tailwindcss"; 
+@import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -334,7 +334,8 @@
 }
 
 /* Code Block Selection Overrides for Contrast */
-pre::selection, pre *::selection {
+pre::selection,
+pre *::selection {
   background-color: rgba(99, 102, 241, 0.3) !important;
   color: #ffffff !important;
 }

@@ -86,7 +86,11 @@ const UserSchema = new Schema<IUser>(
     subscriptionId: { type: String },
     subscriptionCode: { type: String, sparse: true, index: true },
     subscriptionToken: { type: String },
-    subscriptionStatus: { type: String, enum: ["active", "canceled", "past_due", "none"], default: "none" },
+    subscriptionStatus: {
+      type: String,
+      enum: ["active", "canceled", "past_due", "none"],
+      default: "none",
+    },
     lastPaymentAt: { type: Date },
     currentPeriodEnd: { type: Date },
     billingCurrency: { type: String },
@@ -103,7 +107,6 @@ UserSchema.index(
   { unique: true, sparse: true, collation: { locale: "en", strength: 2 } }
 );
 
-const User: Model<IUser> =
-  mongoose.models.User ?? mongoose.model<IUser>("User", UserSchema);
+const User: Model<IUser> = mongoose.models.User ?? mongoose.model<IUser>("User", UserSchema);
 
 export default User;

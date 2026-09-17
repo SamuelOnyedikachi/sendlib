@@ -1,8 +1,8 @@
+import { decrypt, encrypt } from "@/lib/encryption";
 import User, { IUser } from "@/models/User";
-import { encrypt, decrypt } from "@/lib/encryption";
-import { generateSecureToken, hashToken, safeEqual } from "./utils";
-import { generateTotpSecret, verifyTotp, buildOtpauthUri } from "./totp";
 import { AuthError } from "./errors";
+import { buildOtpauthUri, generateTotpSecret, verifyTotp } from "./totp";
+import { generateSecureToken, hashToken, safeEqual } from "./utils";
 
 export const RECOVERY_CODE_COUNT = 10;
 
@@ -49,7 +49,11 @@ export interface TwoFactorSetupResult {
 /** Step 1: generate a TOTP secret + recovery codes and persist (unconfirmed). */
 export async function startTwoFactorSetup(user: IUser): Promise<TwoFactorSetupResult> {
   if (isTwoFactorEnabled(user)) {
-    throw new AuthError("Two-factor authentication is already enabled.", "2fa_already_enabled", 400);
+    throw new AuthError(
+      "Two-factor authentication is already enabled.",
+      "2fa_already_enabled",
+      400
+    );
   }
 
   const secret = generateTotpSecret(20);

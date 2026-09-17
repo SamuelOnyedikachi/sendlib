@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
 import { requireAuthUser } from "@/lib/auth";
-import { rateLimit } from "@/lib/rateLimit";
+import { authErrorResponse, getDeviceInfo } from "@/lib/auth/handlers";
 import { resendVerificationEmail } from "@/lib/auth/service";
-import { getDeviceInfo, authErrorResponse } from "@/lib/auth/handlers";
+import { rateLimit } from "@/lib/rateLimit";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {

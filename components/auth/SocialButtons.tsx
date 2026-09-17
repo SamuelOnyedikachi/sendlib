@@ -1,11 +1,9 @@
+import { GithubIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useState } from "react";
-import { GithubIcon } from "@hugeicons/core-free-icons";
 
 export const SocialButtons = () => {
-  const [isLoggingIn, setIsLoggingIn] = useState<"github" | "google" | null>(
-    null,
-  );
+  const [isLoggingIn, setIsLoggingIn] = useState<"github" | "google" | null>(null);
   return (
     <div className="space-y-2.5">
       <button

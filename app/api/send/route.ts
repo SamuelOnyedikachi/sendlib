@@ -1,16 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
+import { type DebugStep, analyzeHtmlIssues } from "@/lib/emailDebugger";
 import { sendGmailEmail } from "@/lib/gmail";
-import ApiKey, { IApiKey } from "@/models/ApiKey";
-import User from "@/models/User";
-import GmailAccount from "@/models/GmailAccount";
-import EmailTemplate from "@/models/EmailTemplate";
-import argon2 from "argon2";
-import mongoose from "mongoose";
+import { getEffectiveUserPlan } from "@/lib/paystack";
 import { rateLimit } from "@/lib/rateLimit";
 import { interpolate, isValidSlug } from "@/lib/templates";
-import { analyzeHtmlIssues, type DebugStep } from "@/lib/emailDebugger";
-import { getEffectiveUserPlan } from "@/lib/paystack";
+import ApiKey, { IApiKey } from "@/models/ApiKey";
+import EmailTemplate from "@/models/EmailTemplate";
+import GmailAccount from "@/models/GmailAccount";
+import User from "@/models/User";
+import argon2 from "argon2";
+import mongoose from "mongoose";
+import { NextRequest, NextResponse } from "next/server";
 
 const MAX_SUBJECT_LENGTH = 998;
 const MAX_RECIPIENTS = 50;
@@ -54,12 +54,15 @@ function toArray(v: unknown): string[] {
 export async function POST(req: NextRequest) {
   try {
     const rawKey =
-      req.headers.get("x-api-key") ??
-      req.headers.get("authorization")?.replace(/^bearer\s+/i, "");
+      req.headers.get("x-api-key") ?? req.headers.get("authorization")?.replace(/^bearer\s+/i, "");
 
     if (!rawKey) {
       return NextResponse.json(
-        { success: false, message: "API key required. Pass it in the x-api-key header or as a Bearer token in the Authorization header." },
+        {
+          success: false,
+          message:
+            "API key required. Pass it in the x-api-key header or as a Bearer token in the Authorization header.",
+        },
         { status: 401 }
       );
     }
@@ -68,7 +71,10 @@ export async function POST(req: NextRequest) {
 
     const parts = rawKey.split("_");
     if (parts.length < 3) {
-      return NextResponse.json({ success: false, message: "Invalid API key format." }, { status: 401 });
+      return NextResponse.json(
+        { success: false, message: "Invalid API key format." },
+        { status: 401 }
+      );
     }
     const prefix = `${parts[0]}_${parts[1]}`;
 
@@ -90,18 +96,24 @@ export async function POST(req: NextRequest) {
     }
 
     if (!authenticatedUserId || !matchedKey) {
-      return NextResponse.json({ success: false, message: "Invalid or revoked API key." }, { status: 401 });
+      return NextResponse.json(
+        { success: false, message: "Invalid or revoked API key." },
+        { status: 401 }
+      );
     }
 
     const user = await User.findById(authenticatedUserId).lean();
     if (!user) {
-      return NextResponse.json({ success: false, message: "User account not found." }, { status: 404 });
+      return NextResponse.json(
+        { success: false, message: "User account not found." },
+        { status: 404 }
+      );
     }
 
     // --- Rate limit ---
     const plan = getEffectiveUserPlan(user);
-    const rl = await rateLimit("send", apiKeyId!.toString(), plan);
-    
+    const rl = await rateLimit("send", apiKeyId?.toString(), plan);
+
     if (!rl.success) {
       const waitSeconds = Math.max(0, rl.resetTimestamp - Math.floor(Date.now() / 1000));
       return NextResponse.json(
@@ -138,7 +150,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-
     const body = await req.json();
     const {
       to: rawTo,
@@ -173,7 +184,7 @@ export async function POST(req: NextRequest) {
     let from = rawFrom;
     let subject = rawSubject;
     let html = rawHtml;
-    let text = rawText;
+    const text = rawText;
     let usedTemplateSlug: string | undefined;
     let missingVars: string[] = [];
     let unresolvedVars: string[] = [];
@@ -182,7 +193,10 @@ export async function POST(req: NextRequest) {
       const slug = String(templateSlug).trim().toLowerCase();
       if (!isValidSlug(slug)) {
         return NextResponse.json(
-          { success: false, message: "Invalid template slug. Use lowercase letters, numbers, and hyphens." },
+          {
+            success: false,
+            message: "Invalid template slug. Use lowercase letters, numbers, and hyphens.",
+          },
           { status: 400 }
         );
       }
@@ -192,13 +206,17 @@ export async function POST(req: NextRequest) {
       });
       if (!tpl) {
         return NextResponse.json(
-          { success: false, message: `Unknown template '${slug}'. Create it in Dashboard → Templates, or omit template and send html/subject instead.` },
+          {
+            success: false,
+            message: `Unknown template '${slug}'. Create it in Dashboard → Templates, or omit template and send html/subject instead.`,
+          },
           { status: 404 }
         );
       }
-      const data = templateData && typeof templateData === "object" && !Array.isArray(templateData)
-        ? templateData
-        : {};
+      const data =
+        templateData && typeof templateData === "object" && !Array.isArray(templateData)
+          ? templateData
+          : {};
       const subjectOut = interpolate(tpl.subject, data);
       const htmlOut = interpolate(tpl.html, data);
       missingVars = [...new Set([...subjectOut.missing, ...htmlOut.missing])];
@@ -226,9 +244,12 @@ export async function POST(req: NextRequest) {
         key: "variables",
         label: "Variables resolved",
         ok: unresolvedVars.length === 0,
-        detail: unresolvedVars.length === 0
-          ? (tpl.variables.length ? `Filled ${tpl.variables.join(", ")}.` : "No variables in this template.")
-          : `Still unresolved: ${unresolvedVars.map((v) => `{{${v}}}`).join(", ")}.`,
+        detail:
+          unresolvedVars.length === 0
+            ? tpl.variables.length
+              ? `Filled ${tpl.variables.join(", ")}.`
+              : "No variables in this template."
+            : `Still unresolved: ${unresolvedVars.map((v) => `{{${v}}}`).join(", ")}.`,
       });
     } else {
       preSteps.push({
@@ -254,7 +275,10 @@ export async function POST(req: NextRequest) {
       }).sort({ createdAt: 1 });
       if (!firstAccount) {
         return NextResponse.json(
-          { success: false, message: "No connected Gmail account. Connect one in the dashboard, or pass from." },
+          {
+            success: false,
+            message: "No connected Gmail account. Connect one in the dashboard, or pass from.",
+          },
           { status: 400 }
         );
       }
@@ -264,7 +288,12 @@ export async function POST(req: NextRequest) {
     // --- Required fields ---
     if (!rawTo || !subject || !from) {
       return NextResponse.json(
-        { success: false, message: templateSlug ? "Missing required fields: to (and from if you have multiple Gmail accounts)." : "Missing required fields: from, to, subject." },
+        {
+          success: false,
+          message: templateSlug
+            ? "Missing required fields: to (and from if you have multiple Gmail accounts)."
+            : "Missing required fields: from, to, subject.",
+        },
         { status: 400 }
       );
     }
@@ -280,7 +309,10 @@ export async function POST(req: NextRequest) {
     // --- Subject length ---
     if (subjectStr.length > MAX_SUBJECT_LENGTH) {
       return NextResponse.json(
-        { success: false, message: `Subject too long. Max ${MAX_SUBJECT_LENGTH} characters (RFC 2822 limit).` },
+        {
+          success: false,
+          message: `Subject too long. Max ${MAX_SUBJECT_LENGTH} characters (RFC 2822 limit).`,
+        },
         { status: 413 }
       );
     }
@@ -292,14 +324,20 @@ export async function POST(req: NextRequest) {
     if (html && Buffer.byteLength(html, "utf8") > planLimits.maxHtmlBytes) {
       const maxMb = plan === "pro" ? "5MB" : "2MB";
       return NextResponse.json(
-        { success: false, message: `HTML body too large. Your ${plan} plan allows up to ${maxMb}.${plan === "free" ? " Upgrade to Pro for larger payloads." : ""}` },
+        {
+          success: false,
+          message: `HTML body too large. Your ${plan} plan allows up to ${maxMb}.${plan === "free" ? " Upgrade to Pro for larger payloads." : ""}`,
+        },
         { status: 413 }
       );
     }
     if (text && Buffer.byteLength(text, "utf8") > planLimits.maxTextBytes) {
       const maxMb = plan === "pro" ? "2MB" : "1MB";
       return NextResponse.json(
-        { success: false, message: `Text body too large. Your ${plan} plan allows up to ${maxMb}.${plan === "free" ? " Upgrade to Pro for larger payloads." : ""}` },
+        {
+          success: false,
+          message: `Text body too large. Your ${plan} plan allows up to ${maxMb}.${plan === "free" ? " Upgrade to Pro for larger payloads." : ""}`,
+        },
         { status: 413 }
       );
     }
@@ -310,7 +348,10 @@ export async function POST(req: NextRequest) {
     const bccArr = toArray(rawBcc);
 
     if (toArr.length === 0) {
-      return NextResponse.json({ success: false, message: "At least one 'to' recipient is required." }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "At least one 'to' recipient is required." },
+        { status: 400 }
+      );
     }
     if (toArr.length > MAX_RECIPIENTS) {
       return NextResponse.json(
@@ -326,7 +367,10 @@ export async function POST(req: NextRequest) {
     }
     if (bccArr.length > MAX_RECIPIENTS) {
       return NextResponse.json(
-        { success: false, message: `Too many 'bcc' recipients. Max ${MAX_RECIPIENTS} per request.` },
+        {
+          success: false,
+          message: `Too many 'bcc' recipients. Max ${MAX_RECIPIENTS} per request.`,
+        },
         { status: 400 }
       );
     }
@@ -335,7 +379,10 @@ export async function POST(req: NextRequest) {
     if (attachments) {
       if (attachments.length > planLimits.maxAttachments) {
         return NextResponse.json(
-          { success: false, message: `Too many attachments. Your ${plan} plan allows up to ${planLimits.maxAttachments} files per request.${plan === "free" ? " Upgrade to Pro to send more attachments." : ""}` },
+          {
+            success: false,
+            message: `Too many attachments. Your ${plan} plan allows up to ${planLimits.maxAttachments} files per request.${plan === "free" ? " Upgrade to Pro to send more attachments." : ""}`,
+          },
           { status: 400 }
         );
       }
@@ -343,7 +390,10 @@ export async function POST(req: NextRequest) {
       for (const att of attachments) {
         if (!att.filename || !att.content) {
           return NextResponse.json(
-            { success: false, message: "Each attachment requires a filename and a base64-encoded content string." },
+            {
+              success: false,
+              message: "Each attachment requires a filename and a base64-encoded content string.",
+            },
             { status: 400 }
           );
         }
@@ -351,7 +401,10 @@ export async function POST(req: NextRequest) {
         if (bytes > planLimits.maxAttachmentBytes) {
           const maxMb = plan === "pro" ? "10MB" : "1MB";
           return NextResponse.json(
-            { success: false, message: `Attachment '${att.filename}' is too large. Your ${plan} plan allows up to ${maxMb} per file.${plan === "free" ? " Upgrade to Pro for larger attachments." : ""}` },
+            {
+              success: false,
+              message: `Attachment '${att.filename}' is too large. Your ${plan} plan allows up to ${maxMb} per file.${plan === "free" ? " Upgrade to Pro for larger attachments." : ""}`,
+            },
             { status: 413 }
           );
         }
@@ -359,7 +412,10 @@ export async function POST(req: NextRequest) {
       }
       if (totalBytes > MAX_TOTAL_ATTACHMENT_BYTES) {
         return NextResponse.json(
-          { success: false, message: "Total attachment size exceeds the 25MB limit (enforced by Gmail API)." },
+          {
+            success: false,
+            message: "Total attachment size exceeds the 25MB limit (enforced by Gmail API).",
+          },
           { status: 413 }
         );
       }
@@ -419,7 +475,7 @@ export async function POST(req: NextRequest) {
           "X-RateLimit-Limit": String(rl.limit),
           "X-RateLimit-Remaining": String(rl.remaining),
           "X-RateLimit-Reset": String(rl.resetTimestamp),
-        }
+        },
       }
     );
   } catch (err) {

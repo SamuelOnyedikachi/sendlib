@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const LANG_LABELS: Record<string, string> = {
   curl: "cURL",
@@ -9,20 +9,20 @@ const LANG_LABELS: Record<string, string> = {
   rust: "Rust",
   php: "PHP",
   net: ".NET",
-  java: "Java"
+  java: "Java",
 };
 
-export function EditableCodeBlock({ 
+export function EditableCodeBlock({
   snippets,
-  title
-}: { 
+  title,
+}: {
   snippets: Record<string, string>;
   title?: string;
 }) {
   const availableLangs = Object.keys(snippets);
   const [lang, setLang] = useState<string>(availableLangs[0]);
   const [isCopied, setIsCopied] = useState(false);
-  
+
   const preRef = useRef<HTMLPreElement>(null);
   const [editedSnippets, setEditedSnippets] = useState<Record<string, string>>({});
 
@@ -34,7 +34,7 @@ export function EditableCodeBlock({
 
   const handleInput = () => {
     if (preRef.current) {
-      setEditedSnippets(prev => ({ ...prev, [lang]: preRef.current!.innerText }));
+      setEditedSnippets((prev) => ({ ...prev, [lang]: preRef.current?.innerText }));
     }
   };
 
@@ -69,7 +69,9 @@ export function EditableCodeBlock({
                   key={tab}
                   onClick={() => setLang(tab)}
                   className={`px-3 py-1 rounded-md transition-colors cursor-pointer whitespace-nowrap ${
-                    lang === tab ? "bg-primary-sendlib/10 text-primary-sendlib font-bold" : "text-[#75777d] hover:text-primary-sendlib"
+                    lang === tab
+                      ? "bg-primary-sendlib/10 text-primary-sendlib font-bold"
+                      : "text-[#75777d] hover:text-primary-sendlib"
                   }`}
                 >
                   {LANG_LABELS[tab] || tab}
@@ -78,9 +80,9 @@ export function EditableCodeBlock({
             </div>
           )}
           {availableLangs.length === 1 && !title && (
-             <code className="text-sm font-mono text-primary-sendlib bg-primary-sendlib/5 px-3 py-1 rounded-lg border border-primary-sendlib/20">
-               {LANG_LABELS[lang] || lang}
-             </code>
+            <code className="text-sm font-mono text-primary-sendlib bg-primary-sendlib/5 px-3 py-1 rounded-lg border border-primary-sendlib/20">
+              {LANG_LABELS[lang] || lang}
+            </code>
           )}
         </div>
         <button
@@ -91,10 +93,10 @@ export function EditableCodeBlock({
         </button>
       </div>
 
-      <pre 
+      <pre
         ref={preRef}
-        contentEditable 
-        suppressContentEditableWarning 
+        contentEditable
+        suppressContentEditableWarning
         onBlur={handleInput}
         className="p-4 bg-surface-container-high border border-outline-variant/50 rounded-lg text-sm font-mono text-white/95 overflow-x-auto whitespace-pre leading-relaxed outline-none focus:border-primary-sendlib focus:ring-1 focus:ring-primary-sendlib/20 transition-all cursor-text"
       />

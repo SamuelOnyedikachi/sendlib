@@ -43,7 +43,11 @@ export function useEmailLogs(page = 1, limit = 20, filters?: EmailLogsFilters) {
 
       const res = await api.get<
         never,
-        { success: boolean; data: EmailLog[]; meta: { page: number; limit: number; total: number; totalPages: number } }
+        {
+          success: boolean;
+          data: EmailLog[];
+          meta: { page: number; limit: number; total: number; totalPages: number };
+        }
       >(`/logs?${params.toString()}`);
       return res;
     },

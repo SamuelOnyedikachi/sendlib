@@ -4,7 +4,10 @@ import crypto from "crypto";
  * Cryptographically secure random token. Link tokens (verification email,
  * password reset) use hex; session tokens use base64url.
  */
-export function generateSecureToken(byteLength = 32, encoding: "hex" | "base64url" = "hex"): string {
+export function generateSecureToken(
+  byteLength = 32,
+  encoding: "hex" | "base64url" = "hex"
+): string {
   return crypto.randomBytes(byteLength).toString(encoding);
 }
 

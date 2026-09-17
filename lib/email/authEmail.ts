@@ -70,4 +70,3 @@ export async function sendAuthEmail(input: AuthEmailInput): Promise<{ messageId:
     throw new Error(`Auth email delivery failed: ${errMsg}`);
   }
 }
-

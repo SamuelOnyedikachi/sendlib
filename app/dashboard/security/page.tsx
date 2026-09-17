@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { toast } from "sonner";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Shield01Icon, PasswordValidationIcon } from "@hugeicons/core-free-icons";
-import { TwoFactorSection } from "@/components/security/TwoFactorSection";
 import { FormField } from "@/components/auth/FormField";
-import { useMe, useChangePassword } from "@/hooks/useAuth";
+import { TwoFactorSection } from "@/components/security/TwoFactorSection";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useChangePassword, useMe } from "@/hooks/useAuth";
 import { passwordSchema } from "@/lib/auth/passwordPolicy";
+import { PasswordValidationIcon, Shield01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function SecurityPage() {
   const { data: user, isLoading } = useMe();
@@ -65,15 +65,9 @@ export default function SecurityPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 md:px-6 py-8 space-y-6">
       <div>
-        <h1 className="font-headline-lg text-headline-lg text-on-background font-bold">
-          Security
-        </h1>
-        <p className="text-secondary mt-1">
-          Manage two-factor authentication and your password.
-        </p>
+        <h1 className="font-headline-lg text-headline-lg text-on-background font-bold">Security</h1>
+        <p className="text-secondary mt-1">Manage two-factor authentication and your password.</p>
       </div>
-
-
 
       {/* Two-factor authentication */}
       <TwoFactorSection />
@@ -81,7 +75,11 @@ export default function SecurityPage() {
       {/* Change password */}
       <div className="rounded-2xl border border-outline-variant bg-surface p-6 space-y-4">
         <div className="flex items-start gap-3">
-          <HugeiconsIcon icon={PasswordValidationIcon} size={22} className="mt-0.5 text-primary-sendlib" />
+          <HugeiconsIcon
+            icon={PasswordValidationIcon}
+            size={22}
+            className="mt-0.5 text-primary-sendlib"
+          />
           <div>
             <h2 className="font-headline-md text-headline-md text-on-background font-bold">
               Change password
@@ -97,7 +95,11 @@ export default function SecurityPage() {
             This account was created with a social login and has no password yet.
           </p>
         ) : (
-          <form onSubmit={handleChangePassword} className="sm:flex sm:gap-4 gap-3 items-end flex-wrap" noValidate>
+          <form
+            onSubmit={handleChangePassword}
+            className="sm:flex sm:gap-4 gap-3 items-end flex-wrap"
+            noValidate
+          >
             <div className="sm:flex-1 min-w-52">
               <FormField label="Current password" htmlFor="current-password">
                 <div className="relative">
@@ -116,16 +118,48 @@ export default function SecurityPage() {
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface focus:outline-none cursor-pointer"
                   >
                     {showCurrentPassword ? (
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                        <line x1="2" x2="22" y1="2" y2="22" />
+                      </svg>
                     ) : (
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
                     )}
                   </button>
                 </div>
               </FormField>
             </div>
             <div className="sm:flex-1 min-w-52">
-              <FormField label="New password" htmlFor="new-password" error={passwordError ?? undefined}>
+              <FormField
+                label="New password"
+                htmlFor="new-password"
+                error={passwordError ?? undefined}
+              >
                 <div className="relative">
                   <Input
                     id="new-password"
@@ -145,9 +179,37 @@ export default function SecurityPage() {
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface focus:outline-none cursor-pointer"
                   >
                     {showNewPassword ? (
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                        <line x1="2" x2="22" y1="2" y2="22" />
+                      </svg>
                     ) : (
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
                     )}
                   </button>
                 </div>
@@ -175,9 +237,9 @@ export default function SecurityPage() {
             <Button
               type="submit"
               disabled={
-                changePassword.isPending || 
-                !currentPassword || 
-                !newPassword || 
+                changePassword.isPending ||
+                !currentPassword ||
+                !newPassword ||
                 (user.twoFactorEnabled && twoFactorCode.length < 6)
               }
               className="h-11 rounded-xl font-label-sm bg-primary-sendlib text-black hover:opacity-90 cursor-pointer mt-auto"

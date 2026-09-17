@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
 import { clearAuthCookies } from "@/lib/auth";
-import { connectDB } from "@/lib/db";
 import { revokeSession } from "@/lib/auth/sessions";
+import { connectDB } from "@/lib/db";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   const token = req.cookies.get("access_token")?.value;

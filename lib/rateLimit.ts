@@ -1,5 +1,5 @@
-import { connectToRedis } from "./redis";
 import crypto from "crypto";
+import { connectToRedis } from "./redis";
 
 export type LimiterType = "send" | "auth" | "login" | "signup" | "password_reset";
 
@@ -32,7 +32,8 @@ function memoryRateLimit(limitKey: string, limit: number): RateLimitResult {
   const now = Date.now();
   const existing = memoryLimiters.get(limitKey);
   const current = existing && existing.resetAt > now ? existing.count + 1 : 1;
-  const resetAt = existing && existing.resetAt > now ? existing.resetAt : now + WINDOW_SECONDS * 1000;
+  const resetAt =
+    existing && existing.resetAt > now ? existing.resetAt : now + WINDOW_SECONDS * 1000;
   memoryLimiters.set(limitKey, { count: current, resetAt });
   return {
     success: current <= limit,
@@ -48,8 +49,13 @@ export async function rateLimit(
   plan: "free" | "pro" = "free"
 ): Promise<RateLimitResult> {
   const windowSeconds = 60;
-  const limit = (type === "auth" || type === "login" || type === "signup" || type === "password_reset") ? 60 : plan === "pro" ? 300 : 30;
-  
+  const limit =
+    type === "auth" || type === "login" || type === "signup" || type === "password_reset"
+      ? 60
+      : plan === "pro"
+        ? 300
+        : 30;
+
   const safeKey = crypto.createHash("sha256").update(`${type}:${plan}:${key}`).digest("hex");
   const limitKey = `rl_${safeKey}`;
 
@@ -67,7 +73,7 @@ export async function rateLimit(
       return current
     `;
 
-    const current = await client.eval(script, 1, limitKey, WINDOW_SECONDS) as number;
+    const current = (await client.eval(script, 1, limitKey, WINDOW_SECONDS)) as number;
     const ttl = await client.ttl(limitKey);
     const resetTimestamp = Math.floor(Date.now() / 1000) + (ttl > 0 ? ttl : WINDOW_SECONDS);
     const remaining = Math.max(0, limit - current);
@@ -78,8 +84,16 @@ export async function rateLimit(
 
     return { success: true, limit, remaining, resetTimestamp };
   } catch (error) {
-    console.error("Rate limiter unavailable", { type, error: error instanceof Error ? error.message : "Unknown" });
+    console.error("Rate limiter unavailable", {
+      type,
+      error: error instanceof Error ? error.message : "Unknown",
+    });
     const success = type === "send";
-    return { success, limit, remaining: success ? limit : 0, resetTimestamp: Math.floor(Date.now() / 1000) + WINDOW_SECONDS };
+    return {
+      success,
+      limit,
+      remaining: success ? limit : 0,
+      resetTimestamp: Math.floor(Date.now() / 1000) + WINDOW_SECONDS,
+    };
   }
 }

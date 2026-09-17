@@ -1,9 +1,17 @@
 "use client";
 
+import {
+  BookOpenIcon,
+  FileTypeIcon,
+  Key01Icon,
+  MailIcon,
+  MailUpload01Icon,
+  ShieldIcon,
+  ZapIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { HugeiconsIcon } from '@hugeicons/react';
-import { BookOpenIcon, FileTypeIcon, Key01Icon, MailIcon, ShieldIcon, ZapIcon, MailUpload01Icon } from '@hugeicons/core-free-icons';
 
 const DOC_SECTIONS = [
   {
@@ -56,11 +64,11 @@ export function DocsSidebar() {
                           : "text-secondary hover:bg-surface-container-low hover:text-on-background"
                       }`}
                     >
-                      <HugeiconsIcon 
-                        icon={link.icon} 
-                        size={16} 
-                        color='currentColor' 
-                        strokeWidth={1.5} 
+                      <HugeiconsIcon
+                        icon={link.icon}
+                        size={16}
+                        color="currentColor"
+                        strokeWidth={1.5}
                         className={isActive ? "text-white" : "text-secondary"}
                       />
                       {link.name}

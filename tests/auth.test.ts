@@ -1,9 +1,13 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { NextResponse } from "next/server";
-import { setAuthCookies, setPendingAuthCookies, clearAuthCookies } from "@/lib/auth";
+import { clearAuthCookies, setAuthCookies, setPendingAuthCookies } from "@/lib/auth";
 import { validateEmail, validatePassword } from "@/lib/auth/passwords";
-import { formatRecoveryCode, generateRecoveryCodes, verifyRecoveryCode } from "@/lib/auth/twoFactor";
+import {
+  formatRecoveryCode,
+  generateRecoveryCodes,
+  verifyRecoveryCode,
+} from "@/lib/auth/twoFactor";
 import { hashToken } from "@/lib/auth/utils";
+import { NextResponse } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 type RecoveryCodeTestUser = {
   twoFactor: {
