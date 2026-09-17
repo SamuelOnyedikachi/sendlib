@@ -198,17 +198,6 @@ export default function HomeClient() {
             </div>
 
             <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center w-full">
-              <a
-                href="https://github.com/samueltuoyo15/sendlib"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-outline-variant/70 bg-surface-container-low hover:bg-surface-container hover:border-outline-variant text-white/90 hover:text-white text-xs font-semibold mb-6 transition-all active:scale-95"
-              >
-                <HugeiconsIcon icon={GithubIcon} size={15} />
-                <span>samueltuoyo15/sendlib</span>
-                <span className="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-full">Open Source</span>
-              </a>
-
               <h1 className="text-[40px] leading-[1.1] md:text-[56px] lg:text-[64px] font-headline-lg-mobile text-center text-white font-extrabold tracking-tight drop-shadow-sm mb-6">
                 <span className="md:hidden">
                   Zero Domain
@@ -611,7 +600,7 @@ export default function HomeClient() {
 
       {/* Footer */}
       <footer className="w-full mt-auto bg-surface-container border-t border-outline-variant">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-margin-mobile md:px-margin-desktop py-xl gap-10 max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-start px-margin-mobile md:px-margin-desktop py-xl gap-10 max-w-7xl mx-auto">
           <div className="flex flex-col gap-xs text-left">
             <span className="text-xl font-headline-md font-bold tracking-tight text-white">
               Sendlib
@@ -620,46 +609,56 @@ export default function HomeClient() {
               © 2026 Sendlib. All rights reserved.
             </p>
           </div>
-          <div className="grid grid-cols-2 md:flex md:flex-wrap md:justify-end gap-x-8 gap-y-4 w-full md:w-auto">
-            <a
-              href="https://github.com/samueltuoyo15/sendlib"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary-sendlib transition-colors flex items-center gap-1.5"
-            >
-              <HugeiconsIcon icon={GithubIcon} size={14} />
-              GitHub
-            </a>
-            <Link
-              href="/docs"
-              className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary-sendlib transition-colors"
-            >
-              Documentation
-            </Link>
-            <a
-              href="mailto:hello@samueltuoyo.com"
-              className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary-sendlib transition-colors"
-            >
-              Contact Support
-            </a>
-            <Link
-              href="/privacy-policy"
-              className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary-sendlib transition-colors"
-            >
-              Privacy Policy
-            </Link>
-            <Link
-              href="/terms-of-service"
-              className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary-sendlib transition-colors"
-            >
-              Terms of Service
-            </Link>
-            <Link
-              href="/refund"
-              className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary-sendlib transition-colors"
-            >
-              Refund Policy
-            </Link>
+          <div className="flex flex-col sm:flex-row gap-8 sm:gap-16 w-full md:w-auto">
+            <div className="flex flex-col gap-3 text-left">
+              <span className="text-xs font-bold uppercase tracking-wider text-secondary">
+                Product
+              </span>
+              <a
+                href="https://github.com/samueltuoyo15/sendlib"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary-sendlib transition-colors flex items-center gap-1.5"
+              >
+                <HugeiconsIcon icon={GithubIcon} size={14} />
+                GitHub
+              </a>
+              <Link
+                href="/docs"
+                className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary-sendlib transition-colors"
+              >
+                Documentation
+              </Link>
+              <a
+                href="mailto:hello@samueltuoyo.com"
+                className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary-sendlib transition-colors"
+              >
+                Contact Support
+              </a>
+            </div>
+            <div className="flex flex-col gap-3 text-left">
+              <span className="text-xs font-bold uppercase tracking-wider text-secondary">
+                Legal
+              </span>
+              <Link
+                href="/privacy-policy"
+                className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary-sendlib transition-colors"
+              >
+                Privacy Policy
+              </Link>
+              <Link
+                href="/terms-of-service"
+                className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary-sendlib transition-colors"
+              >
+                Terms of Service
+              </Link>
+              <Link
+                href="/refund"
+                className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary-sendlib transition-colors"
+              >
+                Refund Policy
+              </Link>
+            </div>
           </div>
         </div>
       </footer>

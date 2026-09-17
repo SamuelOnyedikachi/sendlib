@@ -244,10 +244,9 @@ export async function sendGmailEmail(
 
   const senderEmail = account.gmailEmail;
   const isWorkspace = !senderEmail.endsWith("@gmail.com") && !senderEmail.endsWith("@googlemail.com");
-  // Conservative limits: slightly under Google's published caps to absorb drift
   const limit = isWorkspace
-    ? isPro ? 2000 : 1800
-    : isPro ? 500 : 450;
+    ? isPro ? 2000 : 1000
+    : isPro ? 500 : 200;
 
   // Atomic per-Gmail daily cap using Redis INCR.
   // Key resets naturally via TTL; 25 hours covers timezone drift.
