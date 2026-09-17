@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
 
     // --- Rate limit ---
     const plan = getEffectiveUserPlan(user);
-    const rl = await rateLimit("send", apiKeyId?.toString(), plan);
+    const rl = await rateLimit("send", apiKeyId?.toString() || "unknown", plan);
 
     if (!rl.success) {
       const waitSeconds = Math.max(0, rl.resetTimestamp - Math.floor(Date.now() / 1000));

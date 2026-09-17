@@ -34,7 +34,7 @@ export function EditableCodeBlock({
 
   const handleInput = () => {
     if (preRef.current) {
-      setEditedSnippets((prev) => ({ ...prev, [lang]: preRef.current?.innerText }));
+      setEditedSnippets((prev) => ({ ...prev, [lang]: preRef.current?.innerText || "" }));
     }
   };
 
