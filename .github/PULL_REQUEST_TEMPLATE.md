@@ -18,4 +18,4 @@ Closes #
 - [ ] Linked issue was approved before this PR was opened
 - [ ] `pnpm lint` and `pnpm build` pass locally
 - [ ] New/changed behavior has been verified
-- [ ] Docs (README, docs/, ADR) updated if this changes setup, architecture, or a prior decision
+- [ ] Docs (README, docs/) updated if this changes setup, API surface, or behavior
