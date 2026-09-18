@@ -42,15 +42,15 @@ describe("2FA recovery codes", () => {
     const rawCode = "0123-4567-89AB-CDEF";
     const hashedCode = hashToken("0123456789ABCDEF");
     const save = vi.fn().mockResolvedValue(undefined);
-    const user: RecoveryCodeTestUser = {
+    const user = {
       twoFactor: {
         recoveryCodes: [{ hash: hashedCode }],
       },
       save,
-    };
+    } as unknown as IUser;
 
     await expect(verifyRecoveryCode(user, rawCode)).resolves.toBe(true);
-    expect(user.twoFactor.recoveryCodes[0].usedAt).toBeInstanceOf(Date);
+    expect(user.twoFactor!.recoveryCodes[0].usedAt).toBeInstanceOf(Date);
     await expect(verifyRecoveryCode(user, rawCode)).resolves.toBe(false);
     expect(save).toHaveBeenCalledTimes(1);
   });
