@@ -5,6 +5,7 @@ import {
   generateRecoveryCodes,
   verifyRecoveryCode,
 } from "@/lib/auth/twoFactor";
+import { IUser } from "@/models/User";
 import { hashToken } from "@/lib/auth/utils";
 import { NextResponse } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
